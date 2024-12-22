@@ -94,7 +94,7 @@ describe('fp', function()
             return n == 2
         end, true)({one = 1, two = 2, three = 3})
 
-        expect.equal(2, result[1])
+        expect.equal(2, result['two'])
     end)
 
     it('can remove', function()
@@ -112,9 +112,9 @@ describe('fp', function()
             return n == 2
         end, true)({one = 1, two = 2, three = 3})
 
-        expect.not_equal(2, result[1])
-        expect.not_equal(2, result[2])
-        expect.equal(nil, result[3])
+        expect.equal(1, result['one'])
+        expect.equal(3, result['three'])
+        expect.equal(nil, result['two'])
     end)
 
     it('can sort', function()

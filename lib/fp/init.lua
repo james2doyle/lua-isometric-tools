@@ -169,7 +169,11 @@ end
 fp.filter = function(pred, asObject)
     return fp.foldl(function(acc, v, k)
         if pred(v, k) then
-            acc[#acc + 1] = v
+            if asObject then
+                acc[k] = v
+            else
+                acc[#acc + 1] = v
+            end
         end
         return acc
     end, {}, asObject)
