@@ -11,26 +11,6 @@
 --      fp.join(' ')
 --    })()
 
----@class fp
----@field identity function
----@field foldl function
----@field constant function
----@field join function
----@field map function
----@field iteratorToTable function
----@field clone function
----@field cloneDeep function
----@field pipe function
----@field find function
----@field findKey function
----@field length function
----@field push function
----@field filter function
----@field without function
----@field sort function
----@field remove function
----@field min function
----@field max function
 local fp = {}
 
 ---Returns the input value unchanged
@@ -77,8 +57,9 @@ fp.constant = function(v)
 end
 
 ---Joins array elements with a separator string
+---@generic T
 ---@param str string # The separator string
----@return fun(arr: string[]): string
+---@return fun(arr: T[]): string
 fp.join = function(str)
     return function(arr)
         return table.concat(arr, str)
@@ -222,7 +203,7 @@ fp.sort = function(pred)
         if pred then
             table.sort(sorted, pred)
         else
-            table.sort(sorted)
+            table.sort(sorted, function(a, b) return a < b end)
         end
         return sorted
     end
@@ -230,35 +211,57 @@ end
 
 ---Returns the minimum value in an array
 ---@generic T
----@param pred? fun(a: T, b: T): boolean # Optional comparison function that returns true when a < b
 ---@return fun(arr: T[]): T # Returns the minimum value
-fp.min = function(pred)
+fp.min = function()
     return function(arr)
-        return fp.foldl(function(acc, v)
-            if acc == nil then return v end
-            if pred then
-                return pred(v, acc) and v or acc
-            else
-                return v < acc and v or acc
-            end
-        end, nil)(arr)
+        local sorted = fp.sort()(arr)
+        return table.remove(sorted, 1)
     end
 end
 
 ---Returns the maximum value in an array
 ---@generic T
----@param pred? fun(a: T, b: T): boolean # Optional comparison function that returns true when a < b
 ---@return fun(arr: T[]): T # Returns the maximum value
-fp.max = function(pred)
+fp.max = function()
     return function(arr)
-        return fp.foldl(function(acc, v)
-            if acc == nil then return v end
-            if pred then
-                return pred(acc, v) and v or acc
-            else
-                return v > acc and v or acc
+        local sorted = fp.sort(function(a, b) return a > b end)(arr)
+        return table.remove(sorted, 1)
+    end
+end
+
+---Returns the first element of an array, or nil if array is empty
+---@generic T
+---@param pred? fun(value: T, key: number|string): boolean
+---@param asObject? boolean # If true, uses pairs() instead of ipairs()
+---@return fun(arr: T[]): T|T[]|nil # Returns the first element, array of first n elements, or nil if empty
+fp.first = function(pred, asObject)
+    local pairsFn = asObject and pairs or ipairs
+    return function(acc)
+        local copy = fp.clone(acc)
+        if type(pred) ~= "function" then
+          return table.remove(copy, 1)
+        end
+        for k, v in pairsFn(copy) do
+            local test = pred(k, v)
+            if test then
+              return v
             end
-        end, nil)(arr)
+        end
+    end
+end
+
+---Checks if an array contains a value or if any element matches a predicate
+---@generic T
+---@param pred T|function # Value to find or predicate function(value: T): boolean
+---@param asObject? boolean # If true, uses pairs() instead of ipairs()
+---@return fun(arr: T[]): boolean # Returns true if the value is found or predicate matches
+fp.contains = function(pred, asObject)
+    return function(arr)
+        if type(pred) == "function" then
+            return fp.length()(fp.filter(pred, asObject)(arr)) > 0
+        else
+            return fp.length()(fp.filter(function(v) return v == pred end, asObject)(arr)) > 0
+        end
     end
 end
 
