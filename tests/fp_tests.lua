@@ -161,6 +161,12 @@ describe('fp', function()
         expect.equal(2, result)
     end)
 
+    it('can last', function()
+        local result = fp.last()({3,2,1})
+
+        expect.equal(1, result)
+    end)
+
     it('can check contains', function()
         local result = fp.contains(2)({3,2,1})
 

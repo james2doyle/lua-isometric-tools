@@ -237,15 +237,38 @@ end
 fp.first = function(pred, asObject)
     local pairsFn = asObject and pairs or ipairs
     return function(acc)
-        local copy = fp.clone(acc)
-        if type(pred) ~= "function" then
-          return table.remove(copy, 1)
-        end
-        for k, v in pairsFn(copy) do
-            local test = pred(k, v)
-            if test then
-              return v
+        if type(pred) == "function" then
+            for k, v in pairsFn(acc) do
+                local test = pred(k, v)
+                if test then
+                    return v
+                end
             end
+        end
+
+        local copy = fp.clone(acc)
+        return table.remove(copy, 1)
+    end
+end
+
+---Returns the last element of an array or the last key-value pair of an object
+---@generic T
+---@param asObject? boolean # If true, treats input as object instead of array
+---@return fun(acc: T[]|table): T|T[]|nil # Returns last element(s) or nil if empty
+fp.last = function(asObject)
+    return function(acc)
+        if asObject then
+            -- Handle objects using pairs
+            local lastKey, lastValue = nil, nil
+            for k, v in ipairs(acc) do
+                lastKey, lastValue = k, v
+            end
+            return { [lastKey] = lastValue }
+        else
+            -- Handle arrays
+            local len = #acc
+            if len == 0 then return nil end
+            return acc[len]
         end
     end
 end
