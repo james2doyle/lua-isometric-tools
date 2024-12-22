@@ -1,4 +1,5 @@
 local Vector = require 'lib.vector'
+local fp = require 'lib.fp'
 
 ---@class Map
 ---@field colCount number
@@ -78,6 +79,8 @@ end
 function Map:getNeighboursFor(node, maxHeightDifference)
     local matches = {}
 
+    debug.debug()
+
     for _, v in pairs(node:neighbours()) do
         local exists = self.tiles[tostring(v)]
 
@@ -120,47 +123,65 @@ local function createSortedTable(originalTable, keyFunction)
     return sortedTable
 end
 
+---@param input table
+---@param predicate function
+---@return table
+local function filter(input, predicate)
+  local out = {}
+
+  for k, v in ipairs(input) do
+    if predicate(v, k, input) then
+      out[k] = v
+    end
+  end
+
+  return out
+end
+
 ---@param target Vector
 ---@param maxHeightDifference number
 ---@return {string:number}
 function Map:dijkstra(target, maxHeightDifference)
-    ---@type {string:boolean}
-    local unvisited = {}
+    local targetName = tostring(target)
+
+    ---@type {string:Vector}
+    local unvisited = { [targetName] = target }
     ---@type {string:boolean}
     local visited = {}
     ---@type {string:number}
-    local dist = {}
+    local dist = { [targetName] = 0 }
 
-    unvisited[tostring(target)] = true
-    dist[tostring(target)] = 0
+    -- local currentNode = target
+    -- local currentName = tostring(targetName)
 
-    local currentNode = target
+    -- while fp.length(true)(unvisited) ~= 0 do
+    --     local neighbours = self:getNeighboursFor(currentNode, maxHeightDifference)
 
-    while #unvisited == 0 do
-        local neighbours = self:getNeighboursFor(currentNode, maxHeightDifference)
-        for _,neighbour in pairs(neighbours) do
-            if visited[tostring(neighbour)] == nil then
-                unvisited[tostring(neighbour)] = true
-            end
+    --     for _, neighbour in pairs(neighbours) do
+    --         local neighbourName = tostring(neighbour)
+    --         if visited[neighbourName] == nil then
+    --             unvisited[neighbourName] = neighbour
+    --         end
 
-            local alt = dist[tostring(currentNode)] + self:cost(currentNode, neighbour)
+    --         local height = dist[currentName] + self:cost(currentNode, neighbour)
 
-            if alt < dist[tostring(neighbour)] then
-              dist[tostring(neighbour)] = alt
-            end
-        end
+    --         if height < dist[neighbourName] then
+    --           dist[neighbourName] = height
+    --         end
+    --     end
 
-        unvisited[tostring(currentNode)] = false
-        visited[tostring(currentNode)] = true
+    --     unvisited[currentName] = nil
+    --     visited[currentName] = true
 
-        local newNode createSortedTable( unvisited, function(a, b)
-            return dist[tostring(a)] < dist[tostring(b)]
-        end)
+    --     local sortedNodes = createSortedTable(unvisited, function(a, b)
+    --         return dist[tostring(a)] < dist[tostring(b)]
+    --     end)
 
-        if newNode ~= nil then
-          currentNode = newNode
-        end
-    end
+    --     local newNode = table.remove(sortedNodes, 1)
+
+    --     currentNode = newNode
+    --     currentName = tostring(currentNode)
+    -- end
 
     return dist
 end

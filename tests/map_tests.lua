@@ -108,9 +108,9 @@ describe('maps', function()
 
         local dijkstra = map:dijkstra(target, 2)
 
-        for y = 1, #map.rowCount do
-            for x = 1, #map.colCount do
-                local vec = Vector.new(x, y)
+        for y = 1, map.rowCount do
+            for x = 1, map.colCount do
+                local vec = Vector.new(x - 1, y - 1)
                 expect.equal(dijkstra[tostring(vec)], expectedResults[y][x])
             end
         end
