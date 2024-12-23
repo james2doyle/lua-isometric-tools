@@ -1,11 +1,11 @@
 ---@see https://edubart.github.io/lester/
-local lester = require 'lib.lester'
+local lester = require("lib.lester")
 local describe, it, expect = lester.describe, lester.it, lester.expect
 
 lester.parse_args()
 
-local Vector = require 'lib.vector'
-local Map = require 'lib.map'
+local Vector = require("lib.vector")
+local Map = require("lib.map")
 
 -- Customize lester configuration.
 lester.show_traceback = true
@@ -50,20 +50,20 @@ local EXAMPLE_HEIGHTMAP_COORDS_OUTSIDE_OF_MAP = {
     Vector.new(EXAMPLE_HEIGHTMAP_COL_COUNT + 1, 1),
 }
 
-describe('maps', function()
-    it('has zero width and height', function()
+describe("maps", function()
+    it("has zero width and height", function()
         local map = Map.new()
         expect.equal(map.colCount, 0)
         expect.equal(map.rowCount, 0)
     end)
 
-    it('can set the height and width', function()
+    it("can set the height and width", function()
         local map = Map.new(EXAMPLE_HEIGHTMAP)
         expect.equal(map.colCount, EXAMPLE_HEIGHTMAP_COL_COUNT)
         expect.equal(map.rowCount, EXAMPLE_HEIGHTMAP_ROW_COUNT)
     end)
 
-    it('can get the elevation', function()
+    it("can get the elevation", function()
         local map = Map.new({
             -- [0,0], [1,0]
             { 1, 10 },
@@ -83,14 +83,14 @@ describe('maps', function()
         expect.equal(result2.z, 30)
     end)
 
-    it('handles coords outside of the map', function()
+    it("handles coords outside of the map", function()
         local map = Map.new(EXAMPLE_HEIGHTMAP)
         for _, tile in pairs(EXAMPLE_HEIGHTMAP_COORDS_OUTSIDE_OF_MAP) do
             expect.equal(map.tiles[tostring(tile)], nil)
         end
     end)
 
-    it('can calculate move costs', function()
+    it("can calculate move costs", function()
         local map = Map.new({
             { 1, 1, 1, 1 },
             { 1, 1, 1, 1 },
@@ -98,15 +98,15 @@ describe('maps', function()
             { 1, 1, 1, 1 },
         })
 
-        local starting = Vector.new(0,0)
-        local ending = Vector.new(0,1)
+        local starting = Vector.new(0, 0)
+        local ending = Vector.new(0, 1)
 
         local result = map:heuristicCostEstimate(starting, ending)
 
         expect.equal(1, result)
     end)
 
-    it('can calculate complex move costs', function()
+    it("can calculate complex move costs", function()
         local map = Map.new({
             { 1, 1, 1, 1 },
             { 1, 1, 1, 1 },
@@ -114,15 +114,15 @@ describe('maps', function()
             { 1, 1, 1, 1 },
         })
 
-        local starting = Vector.new(0,0)
-        local ending = Vector.new(3,2)
+        local starting = Vector.new(0, 0)
+        local ending = Vector.new(3, 2)
 
         local result = map:heuristicCostEstimate(starting, ending)
 
         expect.equal(4, result)
     end)
 
-    it('can get the dijkstra map for a flat map', function()
+    it("can get the dijkstra map for a flat map", function()
         local map = Map.new({
             { 1, 1, 1, 1 },
             { 1, 1, 1, 1 },
@@ -149,7 +149,7 @@ describe('maps', function()
         end
     end)
 
-    it('can get the dijkstra map for a height map', function()
+    it("can get the dijkstra map for a height map", function()
         local map = Map.new({
             { 1, 1, 1, 1 },
             { 1, 2, 2, 1 },
@@ -176,7 +176,7 @@ describe('maps', function()
         end
     end)
 
-    it('can get the dijkstra map for a height map starting elsewhere', function()
+    it("can get the dijkstra map for a height map starting elsewhere", function()
         local map = Map.new({
             { 1, 1, 1, 1 },
             { 1, 2, 2, 1 },
@@ -203,7 +203,7 @@ describe('maps', function()
         end
     end)
 
-    it('can get the dijkstra map for a the example map', function()
+    it("can get the dijkstra map for a the example map", function()
         local map = Map.new(EXAMPLE_HEIGHTMAP)
 
         local expectedResults = {
@@ -227,15 +227,15 @@ describe('maps', function()
         end
     end)
 
-    it('can get the path for the example map', function()
+    it("can get the path for the example map", function()
         local map = Map.new(EXAMPLE_HEIGHTMAP)
 
         local expectedResults = {
-            '0,0,1',
-            '1,0,1',
-            '2,0,1',
-            '3,0,1',
-            '3,1,1',
+            "0,0,1",
+            "1,0,1",
+            "2,0,1",
+            "3,0,1",
+            "3,1,1",
         }
 
         local target = Vector.zero()
@@ -250,15 +250,15 @@ describe('maps', function()
         end
     end)
 
-    it('can handle the a bad target path', function()
+    it("can handle the a bad target path", function()
         local map = Map.new(EXAMPLE_HEIGHTMAP)
 
         local expectedResults = {
-            '0,0,1',
-            '1,0,1',
-            '2,0,1',
-            '3,0,1',
-            '3,1,1',
+            "0,0,1",
+            "1,0,1",
+            "2,0,1",
+            "3,0,1",
+            "3,1,1",
         }
 
         local target = Vector.zero()
@@ -273,4 +273,4 @@ describe('maps', function()
 end)
 
 lester.report() -- Print overall statistic of the tests run.
-lester.exit()   -- Exit with success if all tests passed.
+lester.exit() -- Exit with success if all tests passed.
