@@ -31,7 +31,7 @@ fp.foldl = function(fun, start, asObject)
     local pairsFn = asObject and pairs or ipairs
     return function(arr)
         local acc = start
-        if type(arr) == 'function' then
+        if type(arr) == "function" then
             local k = 1
             for v in arr do
                 acc = fun(acc, v, k)
@@ -73,7 +73,7 @@ end
 ---@return fun(arr: T[]|table): U[]|table
 fp.map = function(fn, asObject)
     return fp.foldl(function(acc, v, k)
-        acc[k] = fn(v);
+        acc[k] = fn(v)
         return acc
     end, {}, asObject)
 end
@@ -95,7 +95,7 @@ fp.clone = fp.map(fp.identity, true)
 ---@param val T
 ---@return T
 local function cloneDeep(val)
-    if not (type(val) == 'table') then
+    if not (type(val) == "table") then
         return val
     else
         return fp.map(cloneDeep, true)(val)
@@ -207,7 +207,9 @@ fp.sort = function(pred)
         if pred then
             table.sort(sorted, pred)
         else
-            table.sort(sorted, function(a, b) return a < b end)
+            table.sort(sorted, function(a, b)
+                return a < b
+            end)
         end
         return sorted
     end
@@ -228,7 +230,9 @@ end
 ---@return fun(arr: T[]): T # Returns the maximum value
 fp.max = function()
     return function(arr)
-        local sorted = fp.sort(function(a, b) return a > b end)(arr)
+        local sorted = fp.sort(function(a, b)
+            return a > b
+        end)(arr)
         return table.remove(sorted, 1)
     end
 end
@@ -271,7 +275,9 @@ fp.last = function(asObject)
         else
             -- Handle arrays
             local len = #acc
-            if len == 0 then return nil end
+            if len == 0 then
+                return nil
+            end
             return acc[len]
         end
     end
@@ -287,7 +293,9 @@ fp.contains = function(pred, asObject)
         if type(pred) == "function" then
             return fp.length()(fp.filter(pred, asObject)(arr)) > 0
         else
-            return fp.length()(fp.filter(function(v) return v == pred end, asObject)(arr)) > 0
+            return fp.length()(fp.filter(function(v)
+                return v == pred
+            end, asObject)(arr)) > 0
         end
     end
 end
