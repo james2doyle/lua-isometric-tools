@@ -1,26 +1,28 @@
 local Vector = require 'lib.vector'
 
 ---@class Map
----@field colCount number
----@field rowCount number
----@field heightMap {number:number}
----@field tiles {string:number}
----@field convertTo3D Map:convertTo3D
----@field enterable Map:enterable
----@field getNeighboursFor Map:getNeighboursFor
----@field cost Map:cost
----@field dijkstra Map:dijkstra
----@field heuristicCostEstimate Map:heuristicCostEstimate
----@field printDijkstra Map:printDijkstra
+---@field colCount number Number of columns in the map grid
+---@field rowCount number Number of rows in the map grid
+---@field heightMap {number:number} 2D array containing elevation values for each grid position
+---@field tiles {string:number} Dictionary mapping Vector string representations to elevation values
+---@field new fun(heightMap: table|nil, colCount: number|nil, rowCount: number|nil): Map Creates a new Map instance
+---@field convertTo3D fun(self: Map, coord: Vector): Vector Converts a 2D coordinate to 3D with elevation
+---@field enterable fun(self: Map, from: Vector, to: Vector, maxHeightDifference: number): boolean Checks if movement between positions is possible
+---@field getNeighboursFor fun(self: Map, node: Vector, maxHeightDifference: number): {number:Vector} Gets valid neighboring positions
+---@field dijkstra fun(self: Map, start: Vector): {string:number}, {string:number} Performs Dijkstra's pathfinding algorithm
+---@field getPath fun(self: Map, previous: table, from: Vector, to: Vector): table|nil Reconstructs path from dijkstra results
+---@field heuristicCostEstimate fun(self: Map, nodeA: Vector, nodeB: Vector): number Estimates cost between two nodes
+---@field printDijkstra fun(self: Map, distances: table): nil Prints distances in a grid format
 
 local Map = { __type = "Map" }
 Map.__index = Map;
 setmetatable(Map, { __index = Map })
 
----@param heightMap table|nil
----@param colCount number|nil
----@param rowCount number|nil
----@return Map
+---Creates a new Map instance with specified dimensions and height data
+---@param heightMap table|nil 2D array of elevation values for the map
+---@param colCount number|nil Number of columns (required if heightMap is nil)
+---@param rowCount number|nil Number of rows (required if heightMap is nil)
+---@return Map New Map instance
 function Map.new(heightMap, colCount, rowCount)
     local this = {}
     this.heightMap = heightMap or {}
@@ -50,8 +52,9 @@ function Map.new(heightMap, colCount, rowCount)
     return this
 end
 
----@param coord Vector
----@return Vector
+---Converts a 2D coordinate to a 3D vector by adding elevation as Z component
+---@param coord Vector The 2D coordinate to convert
+---@return Vector 3D vector with elevation as Z component
 function Map:convertTo3D(coord)
     ---@type number|nil
     local elevation = self.tiles[tostring(coord)]
@@ -63,10 +66,11 @@ function Map:convertTo3D(coord)
     return Vector.new(coord.x, coord.y, elevation)
 end
 
----@param from Vector
----@param to Vector
----@param maxHeightDifference number
----@return boolean
+---Determines if movement is possible between two positions based on height difference
+---@param from Vector Starting position
+---@param to Vector Target position
+---@param maxHeightDifference number Maximum allowed elevation difference for movement
+---@return boolean True if movement is possible, false otherwise
 function Map:enterable(from, to, maxHeightDifference)
     local neighbourHeight = self.tiles[tostring(from)]
     local nodeHeight = self.tiles[tostring(to)] or 1
@@ -74,9 +78,10 @@ function Map:enterable(from, to, maxHeightDifference)
     return math.abs(neighbourHeight - nodeHeight) <= maxHeightDifference
 end
 
----@param node Vector
----@param maxHeightDifference number
----@return {number:Vector}
+---Gets all valid neighboring positions for a given node considering height constraints
+---@param node Vector Position to find neighbors for
+---@param maxHeightDifference number Maximum allowed elevation difference for movement
+---@return {number:Vector} Array of valid neighboring positions
 function Map:getNeighboursFor(node, maxHeightDifference)
     local matches = {}
 
@@ -98,8 +103,10 @@ function Map:getNeighboursFor(node, maxHeightDifference)
     return canEnter
 end
 
----@param start Vector
----@return {string:number} {string:number}
+---Performs Dijkstra's pathfinding algorithm from a start position
+---@param start Vector Starting position for pathfinding
+---@return {string:number} distances Table of distances from start to all reachable positions
+---@return {string:number} previous Table tracking the optimal path to each position
 function Map:dijkstra(start)
     ---@type {string:number}
     local distances = {}
@@ -147,6 +154,7 @@ function Map:dijkstra(start)
             if unvisited[neighborStr] then
                 local newNeighbor = Vector.fromKey(neighborStr)
                 local weight = currentVec:distanceTo(newNeighbor)
+                -- add the height of the neighbour as part of the distance
                 local newDist = math.abs(distances[current] + weight + self.tiles[neighborStr] - 1)
 
                 if newDist < distances[neighborStr] then
@@ -160,7 +168,11 @@ function Map:dijkstra(start)
     return distances, previous
 end
 
--- Helper function to reconstruct path from start to end node
+---Reconstructs the optimal path between two points using Dijkstra results
+---@param previous table Previous node lookup table from dijkstra algorithm
+---@param from Vector Starting position
+---@param to Vector Target position
+---@return table|nil Array of positions forming the path, or nil if no path exists
 function Map:getPath(previous, from, to)
     local path = {}
 
@@ -180,14 +192,16 @@ function Map:getPath(previous, from, to)
     return path
 end
 
----@param nodeA Vector
----@param nodeB Vector
----@return number
+---Estimates the cost between two nodes using distance heuristic
+---@param nodeA Vector First position
+---@param nodeB Vector Second position
+---@return number Estimated cost between the positions
 function Map:heuristicCostEstimate(nodeA, nodeB)
     return nodeA:distanceTo(nodeB)
 end
 
----@param distances table
+---Prints the distance values from Dijkstra's algorithm in a grid format
+---@param distances table Table of distances from dijkstra algorithm
 function Map:printDijkstra(distances)
     for y = 1, self.rowCount do
         local line = ""

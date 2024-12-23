@@ -1,3 +1,4 @@
+---@see https://edubart.github.io/lester/
 local lester = require 'lib.lester'
 local describe, it, expect = lester.describe, lester.it, lester.expect
 
