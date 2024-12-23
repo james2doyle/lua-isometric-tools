@@ -1,4 +1,4 @@
-local Vector = require 'lib.vector'
+local Vector = require("lib.vector")
 
 ---@class Map
 ---@field colCount number Number of columns in the map grid
@@ -15,7 +15,7 @@ local Vector = require 'lib.vector'
 ---@field printDijkstra fun(self: Map, distances: table): nil Prints distances in a grid format
 
 local Map = { __type = "Map" }
-Map.__index = Map;
+Map.__index = Map
 setmetatable(Map, { __index = Map })
 
 ---Creates a new Map instance with specified dimensions and height data
@@ -140,7 +140,9 @@ function Map:dijkstra(start)
         end
 
         -- If no reachable unvisited nodes remain, break
-        if not current then break end
+        if not current then
+            break
+        end
 
         -- Remove current node from unvisited set
         unvisited[current] = nil
