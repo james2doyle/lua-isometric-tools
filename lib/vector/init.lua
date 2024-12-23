@@ -22,6 +22,7 @@ setmetatable(Vector, { __index = Vector })
 ---@field subtraction function
 ---@field multiplication function
 ---@field division function
+---@field distanceTo function
 
 ---@param x number
 ---@param y number
@@ -36,13 +37,40 @@ function Vector.new(x, y, z)
     setmetatable(this, {
         __index = Vector,
         __add = function(t1, t2)
+            if type(t1) == "number" then
+                t1 = Vector.new(t1, t1)
+            end
+            if type(t2) == "number" then
+                t2 = Vector.new(t2, t2)
+            end
             return Vector.new(t1.x + t2.x, t1.y + t2.y)
         end,
         __sub = function(t1, t2)
+            if type(t1) == "number" then
+                t1 = Vector.new(t1, t1)
+            end
+            if type(t2) == "number" then
+                t2 = Vector.new(t2, t2)
+            end
             return Vector.new(t1.x - t2.x, t1.y - t2.y)
         end,
         __mul = function(t1, t2)
+            if type(t1) == "number" then
+                t1 = Vector.new(t1, t1)
+            end
+            if type(t2) == "number" then
+                t2 = Vector.new(t2, t2)
+            end
             return Vector.new(t1.x * t2.x, t1.y * t2.y)
+        end,
+        __eq = function(t1, t2)
+            if type(t1) == "number" then
+                t1 = Vector.new(t1, t1)
+            end
+            if type(t2) == "number" then
+                t2 = Vector.new(t2, t2)
+            end
+            return t1.x == t2.x and t1.y == t2.y and t1.z == t2.z
         end,
         __tostring = function(t)
             return string.format("%i,%i,%i", t.x, t.y, t.z)
@@ -63,9 +91,21 @@ function Vector.fromKey(key)
     return Vector.new(results[1], results[2], results[3])
 end
 
+---@return Vector
+function Vector.zero()
+    return Vector.new(0, 0)
+end
+
 ---@return number
 function Vector:magnitude()
     return sqrt(self.x * self.x + self.y * self.y)
+end
+
+--- Calculates Euclidean distance between two points
+---@param v Vector
+---@return number
+function Vector:distanceTo(v)
+    return math.ceil(sqrt((v.x - self.x) ^ 2 + (v.y - self.y) ^ 2 + (v.z - self.z) ^ 2))
 end
 
 ---@return number

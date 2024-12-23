@@ -19,6 +19,15 @@ describe('vectors', function()
         expect.equal(tostring(vec), '0,0,1')
     end)
 
+    it('can create a zero vector', function()
+        local vec = Vector.zero()
+
+        expect.equal(vec.x, 0)
+        expect.equal(vec.y, 0)
+        expect.equal(vec.z, 1)
+        expect.equal(tostring(vec), '0,0,1')
+    end)
+
     it('can create a vector from a key', function()
         local vec = Vector.fromKey('0,0,1')
 
@@ -38,11 +47,31 @@ describe('vectors', function()
         expect.equal(combined.z, 1)
     end)
 
+    it('can add a number and a vector', function()
+        local vec1 = Vector.new(1, 1)
+
+        local combined = vec1 + 1
+
+        expect.equal(combined.x, 2)
+        expect.equal(combined.y, 2)
+        expect.equal(combined.z, 1)
+    end)
+
     it('can subtract two vectors', function()
         local vec1 = Vector.new(1, 1)
         local vec2 = Vector.new(1, 1)
 
         local combined = vec1 - vec2
+
+        expect.equal(combined.x, 0)
+        expect.equal(combined.y, 0)
+        expect.equal(combined.z, 1)
+    end)
+
+    it('can subtract a number and a vector', function()
+        local vec1 = Vector.new(1, 1)
+
+        local combined = vec1 - 1
 
         expect.equal(combined.x, 0)
         expect.equal(combined.y, 0)
@@ -58,6 +87,23 @@ describe('vectors', function()
         expect.equal(combined.x, 8)
         expect.equal(combined.y, 15)
         expect.equal(combined.z, 1)
+    end)
+
+    it('can multiply a number and a vector', function()
+        local vec1 = Vector.new(1, 1)
+
+        local combined = vec1 * 2
+
+        expect.equal(combined.x, 2)
+        expect.equal(combined.y, 2)
+        expect.equal(combined.z, 1)
+    end)
+
+    it('can compare two vectors', function()
+        local vec1 = Vector.new(1, 1)
+        local vec2 = Vector.new(1, 1)
+
+        expect.equal(true, vec1 == vec2)
     end)
 end)
 
