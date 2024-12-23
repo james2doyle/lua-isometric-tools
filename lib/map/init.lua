@@ -1,5 +1,4 @@
 local Vector = require 'lib.vector'
-local fp = require 'lib.fp'
 
 ---@class Map
 ---@field colCount number
@@ -11,6 +10,8 @@ local fp = require 'lib.fp'
 ---@field getNeighboursFor Map:getNeighboursFor
 ---@field cost Map:cost
 ---@field dijkstra Map:dijkstra
+---@field heuristicCostEstimate Map:heuristicCostEstimate
+---@field printDijkstra Map:printDijkstra
 
 local Map = { __type = "Map" }
 Map.__index = Map;
@@ -56,7 +57,7 @@ function Map:convertTo3D(coord)
     local elevation = self.tiles[tostring(coord)]
 
     if elevation == nil then
-      error("Could not find tile with key " .. tostring(coord))
+        error("Could not find tile with key " .. tostring(coord))
     end
 
     return Vector.new(coord.x, coord.y, elevation)
@@ -68,7 +69,7 @@ end
 ---@return boolean
 function Map:enterable(from, to, maxHeightDifference)
     local neighbourHeight = self.tiles[tostring(from)]
-    local nodeHeight = self.tiles[tostring(to)]
+    local nodeHeight = self.tiles[tostring(to)] or 1
 
     return math.abs(neighbourHeight - nodeHeight) <= maxHeightDifference
 end
@@ -79,111 +80,127 @@ end
 function Map:getNeighboursFor(node, maxHeightDifference)
     local matches = {}
 
-    debug.debug()
-
     for _, v in pairs(node:neighbours()) do
         local exists = self.tiles[tostring(v)]
 
         if exists ~= nil then
-          table.insert(matches, v)
+            table.insert(matches, v)
         end
     end
 
     local canEnter = {}
     for _, match in pairs(matches) do
         if self:enterable(match, node, maxHeightDifference) then
-          table.insert(canEnter, node)
+            table.insert(canEnter, match)
         end
     end
 
     return canEnter
 end
 
----@param from Vector
----@param to Vector
----@return number
-function Map:cost(from, to)
-    return math.abs(self.tiles[tostring(from)] - self.tiles[tostring(to)]) + 1
-end
-
-local function createSortedTable(originalTable, keyFunction)
-    -- Create a copy of the original table
-    local sortedTable = {}
-
-    -- Copy all elements from the original table to the sorted table
-    for _, value in ipairs(originalTable) do
-        table.insert(sortedTable, value)
-    end
-
-    -- Sort the copied table using the provided key function
-    table.sort(sortedTable, function(a, b)
-        return keyFunction(a, b)
-    end)
-
-    return sortedTable
-end
-
----@param input table
----@param predicate function
----@return table
-local function filter(input, predicate)
-  local out = {}
-
-  for k, v in ipairs(input) do
-    if predicate(v, k, input) then
-      out[k] = v
-    end
-  end
-
-  return out
-end
-
----@param target Vector
----@param maxHeightDifference number
----@return {string:number}
-function Map:dijkstra(target, maxHeightDifference)
-    local targetName = tostring(target)
-
-    ---@type {string:Vector}
-    local unvisited = { [targetName] = target }
-    ---@type {string:boolean}
-    local visited = {}
+---@param start Vector
+---@return {string:number} {string:number}
+function Map:dijkstra(start)
     ---@type {string:number}
-    local dist = { [targetName] = 0 }
+    local distances = {}
+    ---@type {string:number}
+    local previous = {}
+    ---@type {string:boolean}
+    local unvisited = {}
 
-    -- local currentNode = target
-    -- local currentName = tostring(targetName)
+    -- Set initial distances to infinity and add all nodes to unvisited set
+    for vecKey, _ in pairs(self.tiles) do
+        distances[vecKey] = math.huge
+        previous[vecKey] = nil
+        unvisited[vecKey] = true
+    end
 
-    -- while fp.length(true)(unvisited) ~= 0 do
-    --     local neighbours = self:getNeighboursFor(currentNode, maxHeightDifference)
+    local startName = tostring(start)
 
-    --     for _, neighbour in pairs(neighbours) do
-    --         local neighbourName = tostring(neighbour)
-    --         if visited[neighbourName] == nil then
-    --             unvisited[neighbourName] = neighbour
-    --         end
+    -- Set distance to start node as 0
+    distances[startName] = 0
 
-    --         local height = dist[currentName] + self:cost(currentNode, neighbour)
+    -- Main algorithm loop
+    while next(unvisited) do
+        -- Find unvisited node with minimum distance
+        local minDist = math.huge
+        local current = nil
+        for nodeStr, _ in pairs(unvisited) do
+            if distances[nodeStr] < minDist then
+                minDist = distances[nodeStr]
+                current = nodeStr
+            end
+        end
 
-    --         if height < dist[neighbourName] then
-    --           dist[neighbourName] = height
-    --         end
-    --     end
+        -- If no reachable unvisited nodes remain, break
+        if not current then break end
 
-    --     unvisited[currentName] = nil
-    --     visited[currentName] = true
+        -- Remove current node from unvisited set
+        unvisited[current] = nil
 
-    --     local sortedNodes = createSortedTable(unvisited, function(a, b)
-    --         return dist[tostring(a)] < dist[tostring(b)]
-    --     end)
+        --- Get current node coordinates
+        local currentVec = Vector.fromKey(current)
 
-    --     local newNode = table.remove(sortedNodes, 1)
+        -- Update distances to neighbours
+        for _, neighbour in pairs(self:getNeighboursFor(currentVec, math.huge)) do
+            local neighborStr = tostring(neighbour)
+            if unvisited[neighborStr] then
+                local newNeighbor = Vector.fromKey(neighborStr)
+                local weight = currentVec:distanceTo(newNeighbor)
+                local newDist = math.abs(distances[current] + weight + self.tiles[neighborStr] - 1)
 
-    --     currentNode = newNode
-    --     currentName = tostring(currentNode)
-    -- end
+                if newDist < distances[neighborStr] then
+                    distances[neighborStr] = newDist
+                    previous[neighborStr] = current
+                end
+            end
+        end
+    end
 
-    return dist
+    return distances, previous
+end
+
+-- Helper function to reconstruct path from start to end node
+function Map:getPath(previous, from, to)
+    local path = {}
+
+    local current = tostring(to)
+    local start = tostring(from)
+
+    while current do
+        table.insert(path, 1, current)
+        current = previous[current]
+    end
+
+    -- Check if path exists (starts with start node)
+    if not path[1] or path[1] ~= start then
+        return nil -- No path exists
+    end
+
+    return path
+end
+
+---@param nodeA Vector
+---@param nodeB Vector
+---@return number
+function Map:heuristicCostEstimate(nodeA, nodeB)
+    return nodeA:distanceTo(nodeB)
+end
+
+---@param distances table
+function Map:printDijkstra(distances)
+    for y = 1, self.rowCount do
+        local line = ""
+        for x = 1, self.colCount do
+            local vec = Vector.new(x - 1, y - 1)
+            if distances[tostring(vec)] == nil then
+                line = line .. "X"
+            else
+                line = line .. distances[tostring(vec)] .. " "
+            end
+        end
+        print(line)
+    end
 end
 
 return Map
