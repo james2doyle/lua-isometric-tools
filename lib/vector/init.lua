@@ -55,7 +55,7 @@ function Vector.new(x, y, z)
     local this = {}
     this.x = x
     this.y = y
-    this.z = z or 1  -- Makes 2D vectors possible by defaulting z to 1
+    this.z = z or 1 -- Makes 2D vectors possible by defaulting z to 1
 
     -- Set up operator overloading for vector arithmetic
     -- Allows using +, -, *, == operators directly on vectors
@@ -104,7 +104,7 @@ function Vector.new(x, y, z)
         -- Implements string conversion (tostring(vector))
         __tostring = function(t)
             return string.format("%i,%i,%i", t.x, t.y, t.z)
-        end
+        end,
     })
 
     return this
