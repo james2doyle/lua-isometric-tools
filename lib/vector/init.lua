@@ -38,6 +38,10 @@
 ---@field division fun(self: Vector, v: Vector): Vector Divides vectors component-wise (x₁/x₂, y₁/y₂, z₁/z₂)
 ---@field fromKey fun(key: string): Vector Static method to create Vector from string in "x,y,z" format
 ---@field zero fun(): Vector Static method that returns a zero vector (0,0,0)
+---@field up fun(self: Vector): Vector Returns a new vector moved one unit up (+y)
+---@field down fun(self: Vector): Vector Returns a new vector moved one unit down (-y)
+---@field left fun(self: Vector): Vector Returns a new vector moved one unit left (-x)
+---@field right fun(self: Vector): Vector Returns a new vector moved one unit right (+x)
 
 -- Import math.sqrt for cleaner usage
 local sqrt = math.sqrt
@@ -126,6 +130,30 @@ end
 ---@return Vector
 function Vector.zero()
     return Vector.new(0, 0)
+end
+
+-- Returns a new vector moved one unit up (+y)
+---@return Vector
+function Vector:up()
+    return self + Vector.new(0, 1)
+end
+
+-- Returns a new vector moved one unit down (-y)
+---@return Vector
+function Vector:down()
+    return self + Vector.new(0, -1)
+end
+
+-- Returns a new vector moved one unit left (-x)
+---@return Vector
+function Vector:left()
+    return self + Vector.new(-1, 0)
+end
+
+-- Returns a new vector moved one unit right (+x)
+---@return Vector
+function Vector:right()
+    return self + Vector.new(1, 0)
 end
 
 -- Calculates the magnitude (length) of the vector
