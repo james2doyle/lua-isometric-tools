@@ -1,6 +1,8 @@
 Lua Iso Tools
 =============
 
+![example showcase](examples/demo.gif "example showcase")
+
 > A toolkit of functions and classes to help build isometric games with Lua
 
 *Event-driven to work with Raylib or Love2D*
