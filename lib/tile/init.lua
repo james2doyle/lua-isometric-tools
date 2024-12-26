@@ -236,31 +236,38 @@ function Tile:duplicate()
     )
 end
 
----Move tile up one grid/iso position
+local directionVec = {
+    up = Vector.new(0, -1),
+    down = Vector.new(0, 1),
+    left = Vector.new(-1, 0),
+    right = Vector.new(1, 0),
+}
+
+---Move tile up one grid/iso position (y coord +)
 ---@return self
 function Tile:up()
-    self.coords = self.coords + Vector.new(-1, 1)
+    self.coords = self.coords + directionVec.up
     return self
 end
 
----Move tile down one grid/iso position
+---Move tile down one grid/iso position (y coord -)
 ---@return self
 function Tile:down()
-    self.coords = self.coords + Vector.new(1, 1)
+    self.coords = self.coords + directionVec.down
     return self
 end
 
----Move tile left one grid/iso position
+---Move tile left one grid/iso position (x coord -)
 ---@return self
 function Tile:left()
-    self.coords = self.coords + Vector.new(-1, -1)
+    self.coords = self.coords + directionVec.left
     return self
 end
 
----Move tile right one grid/iso position
+---Move tile right one grid/iso position (x coord -)
 ---@return self
 function Tile:right()
-    self.coords = self.coords + Vector.new(-1, 1)
+    self.coords = self.coords + directionVec.right
     return self
 end
 

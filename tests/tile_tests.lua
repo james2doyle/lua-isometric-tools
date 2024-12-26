@@ -125,10 +125,10 @@ describe("tiles", function()
             nil
         )
 
-        expect.equal('0,2,1', tostring(t:duplicate():up().coords))
-        expect.equal('2,2,1', tostring(t:duplicate():down().coords))
-        expect.equal('0,0,1', tostring(t:duplicate():left().coords))
-        expect.equal('0,2,1', tostring(t:duplicate():right().coords))
+        expect.equal('1,0,1', tostring(t:duplicate():up().coords))
+        expect.equal('1,2,1', tostring(t:duplicate():down().coords))
+        expect.equal('0,1,1', tostring(t:duplicate():left().coords))
+        expect.equal('2,1,1', tostring(t:duplicate():right().coords))
     end)
 end)
 
