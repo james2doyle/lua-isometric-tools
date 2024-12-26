@@ -25,6 +25,7 @@
 ---@field z number The z coordinate of the vector (defaults to 1 for 2D vectors)
 ---@field magnitude fun(self: Vector): number Calculates the magnitude (length) of the vector using sqrt(x² + y²)
 ---@field length fun(self: Vector): number Alias for magnitude()
+---@field duplicate fun(self: Vector): Vector Create a copy of the current vector
 ---@field distanceTo fun(self: Vector, v: Vector): number Calculates Euclidean distance between two points using sqrt((x₂-x₁)² + (y₂-y₁)² + (z₂-z₁)²)
 ---@field neighbours fun(self: Vector): Vector[] Returns four adjacent neighbors in 2D space at (x±1,y) and (x,y±1)
 ---@field isNeighbour fun(self: Vector, v: Vector): boolean Checks if the given vector is adjacent to this vector in 2D space
@@ -130,6 +131,12 @@ end
 ---@return Vector
 function Vector.zero()
     return Vector.new(0, 0)
+end
+
+-- Returns a copy of the vector
+---@return Vector
+function Vector:duplicate()
+    return Vector.new(self.x, self.y, self.z)
 end
 
 -- Returns a new vector moved one unit up (+y)

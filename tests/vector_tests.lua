@@ -29,6 +29,17 @@ describe("vectors", function()
         expect.equal(tostring(vec), "0,0,1")
     end)
 
+    it("can duplicate a vector", function()
+        local vec = Vector.new(100,100)
+
+        local vec2 = vec:duplicate()
+
+        expect.equal(vec.x, vec2.x)
+        expect.equal(vec.y, vec2.y)
+        expect.equal(vec.z, vec2.z)
+        expect.equal(tostring(vec), tostring(vec2))
+    end)
+
     it("can create a vector from a key", function()
         local vec = Vector.fromKey("0,0,1")
 
