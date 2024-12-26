@@ -112,6 +112,24 @@ describe("tiles", function()
         expect.equal(false, t.visitable)
         expect.equal(nil, extraDetails)
     end)
+
+    it("can make moves in different directions", function()
+        -- {0,0} {1,0} {2,0}
+        -- {0,1} {1,1} {2,1}
+        -- {0,2} {1,2} {2,2}
+        local t = Tile.new(
+            "grassTile",
+            "grass",
+            Vector.new(1,1),
+            Vector.new(200, 200),
+            nil
+        )
+
+        expect.equal('0,2,1', tostring(t:duplicate():up().coords))
+        expect.equal('2,2,1', tostring(t:duplicate():down().coords))
+        expect.equal('0,0,1', tostring(t:duplicate():left().coords))
+        expect.equal('0,2,1', tostring(t:duplicate():right().coords))
+    end)
 end)
 
 lester.report() -- Print overall statistic of the tests run.
