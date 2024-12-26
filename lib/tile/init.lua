@@ -24,6 +24,7 @@ local TILE_HITBOX_PADDING = 2
 ---@field new fun(name: string, texture: string, coords: Vector, center: Vector, decoration?: string, events?: TileEvents, boundingbox?: table, hitbox?: table): Tile Creates a new Tile instance
 ---@field on fun(self: Tile, event: string, callback: fun(self: Tile, ...any)) Register a callback function for a specific event
 ---@field trigger fun(self: Tile, event: string, ...any): any?, nil|string? Trigger a specific event on the tile with optional additional arguments
+---@field duplicate fun(self: Tile): Tile Create a copy of the current tile
 ---@field up fun(self: Tile): Tile Move tile up one grid position
 ---@field down fun(self: Tile): Tile Move tile down one grid position
 ---@field left fun(self: Tile): Tile Move tile left one grid position
@@ -140,7 +141,7 @@ local TileEvents = {
 
 ---Creates a new Tile instance
 ---@param name string The label for this tile
----@param texture string The name of the texture to load
+---@param texture? string The name of the texture to load
 ---@param coords Vector The coordinates on the grid
 ---@param center Vector The center in the world
 ---@param decoration? string If the tile has an additional texture on the top layer
@@ -156,7 +157,7 @@ function Tile.new(name, texture, coords, center, decoration, events, boundingbox
     this.visitable = true
 
     this.name = name
-    this.texture = texture
+    this.texture = texture or nil
     this.decoration = decoration or nil
 
     this.coords = coords
@@ -219,7 +220,20 @@ function Tile:trigger(event, ...)
     end
 end
 
----Move tile up one grid position
+---@return Tile
+function Tile:duplicate()
+    return Tile.new(
+        self.name,
+        self.texture,
+        self.coords,
+        self.center,
+        self.decoration,
+        self.events,
+        self.boundingbox,
+        self.hitbox
+    )
+end
+
 ---@return self
 function Tile:up()
     self.coords = self.coords + Vector.new(0, 1)

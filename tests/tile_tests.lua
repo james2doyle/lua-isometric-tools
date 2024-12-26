@@ -21,12 +21,31 @@ describe("tiles", function()
             nil
         )
 
-        expect.equal(tostring(t), "grass [ 0, 0 ]")
-        expect.equal(t.name, "grassTile")
-        expect.equal(t.texture, "grass")
-        expect.equal(t.decoration, nil)
-        expect.equal(tostring(t.coords), tostring(Vector.zero()))
-        expect.equal(tostring(t.center), tostring(Vector.new(200, 200)))
+        expect.equal("grass [ 0, 0 ]", tostring(t))
+        expect.equal("grassTile", t.name)
+        expect.equal("grass", t.texture)
+        expect.equal(nil, t.decoration)
+        expect.equal(tostring(Vector.zero()), tostring(t.coords))
+        expect.equal(tostring(Vector.new(200, 200)), tostring(t.center))
+    end)
+
+    it("can duplicate a tile", function()
+        local t = Tile.new(
+            "grassTile",
+            "grass",
+            Vector.zero(),
+            Vector.new(200, 200),
+            nil
+        )
+
+        local t2 = t:duplicate()
+
+        expect.equal(tostring(t), tostring(t2))
+        expect.equal(t.name, t2.name)
+        expect.equal(t.texture, t2.texture)
+        expect.equal(t.decoration, t2.decoration)
+        expect.equal(tostring(t.coords), tostring(t2.coords))
+        expect.equal(tostring(t.center), tostring(t2.center))
     end)
 
     it("can trigger events on a tile", function()
@@ -90,7 +109,7 @@ describe("tiles", function()
 
         expect.equal(false, t.hovered)
         expect.equal(false, t.active)
-        -- expect.equal(true, t.visitable)
+        expect.equal(false, t.visitable)
         expect.equal(nil, extraDetails)
     end)
 end)
