@@ -172,19 +172,21 @@ function Tile.new(name, texture, coords, center, decoration, events, boundingbox
     end
     this.events = mergedEvents
 
-    this.boundingbox = boundingbox or {
-        left = center.x - TILE_HALF_WIDTH,
-        top = center.y - TILE_HEIGHT,
-        right = center.x + TILE_HALF_HEIGHT,
-        bottom = center.y + TILE_HALF_WIDTH,
-    }
+    this.boundingbox = boundingbox
+        or {
+            left = center.x - TILE_HALF_WIDTH,
+            top = center.y - TILE_HEIGHT,
+            right = center.x + TILE_HALF_HEIGHT,
+            bottom = center.y + TILE_HALF_WIDTH,
+        }
 
-    this.hitbox = hitbox or {
-        left = center.x,
-        top = center.y - (TILE_HALF_HEIGHT + TILE_QUARTER_HEIGHT - (TILE_HITBOX_PADDING * 2)),
-        right = center.x + TILE_HALF_HEIGHT,
-        bottom = center.y + TILE_HALF_WIDTH,
-    }
+    this.hitbox = hitbox
+        or {
+            left = center.x,
+            top = center.y - (TILE_HALF_HEIGHT + TILE_QUARTER_HEIGHT - (TILE_HITBOX_PADDING * 2)),
+            right = center.x + TILE_HALF_HEIGHT,
+            bottom = center.y + TILE_HALF_WIDTH,
+        }
 
     setmetatable(this, {
         __index = Tile,
@@ -262,17 +264,40 @@ function Tile:right()
     return self
 end
 
+---Move tile in any given direction
+---@param direction string # up, down, left, or right
+---@return self
+function Tile:move(direction)
+    if direction == "up" then
+        return self:up()
+    end
+
+    if direction == "down" then
+        return self:down()
+    end
+
+    if direction == "left" then
+        return self:left()
+    end
+
+    if direction == "right" then
+        return self:right()
+    end
+
+    error("no direction matching " .. direction)
+end
+
 ---Check if the tile "top" is being hovered over
 ---@return boolean
 function Tile:isHovered(pointer)
-  -- Calculate the squared distances
-  local dx_squared = pointer.x - self.hitbox.left
-  local dy_squared = pointer.y - self.hitbox.top
+    -- Calculate the squared distances
+    local dx_squared = pointer.x - self.hitbox.left
+    local dy_squared = pointer.y - self.hitbox.top
 
-  local distance_squared = dx_squared ^ 2 + dy_squared ^ 2
+    local distance_squared = dx_squared ^ 2 + dy_squared ^ 2
 
-  -- Check if the squared distance is less than or equal to the squared radius
-  return distance_squared <= TILE_QUARTER_HEIGHT ^ 2
+    -- Check if the squared distance is less than or equal to the squared radius
+    return distance_squared <= TILE_QUARTER_HEIGHT ^ 2
 end
 
 return Tile
