@@ -21,7 +21,7 @@ Lua Iso Tools
 
 The example is a Love2D project. Just run `love ./example` from the root of the project.
 
-You can then press `\`` to see the debug overlays
+You can then press \` to see the debug overlays
 
 https://gist.github.com/oatmealine/655c9e64599d0f0dd47687c1186de99f
 https://stevedonovan.github.io/ldoc/manual/doc.md.html
