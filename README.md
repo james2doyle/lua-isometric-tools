@@ -14,7 +14,8 @@ Lua Iso Tools
 
 - `Vector` - a vector class for handling grid-based coordinates
 - `Tile` - a tile class for handling tile drawing, events, and textures
-- `Map` - class for managing tiles, calculating dijkstra paths, and handling movement
+- `TileMap` - a tile map class for handling movement, calculating paths, and selecting, replacing, or finding tiles
+- `Map (deprecated)` - class for managing tiles, calculating dijkstra paths, and handling movement
 
 ### Example
 
