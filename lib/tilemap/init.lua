@@ -10,7 +10,6 @@
 ---```
 
 local Vector = require("lib.vector")
-local Tile = require("lib.tile")
 
 local TileMap = { __type = "TileMap" }
 TileMap.__index = TileMap
