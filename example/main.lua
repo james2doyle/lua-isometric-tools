@@ -29,12 +29,12 @@ function assets:get(name)
 end
 
 local map = {
+    { "box", "box", "box", "empty", "box", "box", "box" },
     { "box", "box", "box", "box", "box", "box", "box" },
     { "box", "box", "box", "box", "box", "box", "box" },
+    { "empty", "box", "box", "box", "box", "box", "empty" },
     { "box", "box", "box", "box", "box", "box", "box" },
-    { "box", "box", "box", "box", "box", "box", "box" },
-    { "box", "box", "box", "box", "box", "box", "box" },
-    { "box", "box", "box", "box", "box", "box", "box" },
+    { "box", "box", "box", "box", "box", "empty", "box" },
     { "box", "box", "box", "box", "box", "box", "box" },
 }
 
@@ -87,6 +87,9 @@ function love.load()
 
     for row = 1, #map do
         for column, tex in ipairs(map[row]) do
+            if tex == "empty" then
+              goto continue
+            end
             local center = Vector.new(
                 400 + (TILE_HALF_WIDTH * column) - (row * TILE_HALF_WIDTH),
                 150 + (TILE_QUARTER_HEIGHT * column) + (row * TILE_QUARTER_HEIGHT)
@@ -102,7 +105,9 @@ function love.load()
                 right = center.x + TILE_HALF_HEIGHT,
                 bottom = center.y + TILE_HALF_WIDTH,
             })
+
             table.insert(tiles, tile)
+            ::continue::
         end
     end
 
@@ -138,16 +143,28 @@ function love.keypressed(key, code, isRepeat)
     end
     if tileStates.active ~= nil then
         if code == "up" then
-            tileStates.active = tileMap:upFrom(tileStates.active)
+            local moveTo = tileMap:upFrom(tileStates.active)
+            if moveTo ~= nil then
+              tileStates.active = tileMap:upFrom(tileStates.active)
+            end
         end
         if code == "down" then
-            tileStates.active = tileMap:downFrom(tileStates.active)
+            local moveTo = tileMap:downFrom(tileStates.active)
+            if moveTo ~= nil then
+              tileStates.active = tileMap:downFrom(tileStates.active)
+            end
         end
         if code == "left" then
-            tileStates.active = tileMap:leftFrom(tileStates.active)
+            local moveTo = tileMap:leftFrom(tileStates.active)
+            if moveTo ~= nil then
+              tileStates.active = tileMap:leftFrom(tileStates.active)
+            end
         end
         if code == "right" then
-            tileStates.active = tileMap:rightFrom(tileStates.active)
+            local moveTo = tileMap:rightFrom(tileStates.active)
+            if moveTo ~= nil then
+              tileStates.active = tileMap:rightFrom(tileStates.active)
+            end
         end
     end
 end
