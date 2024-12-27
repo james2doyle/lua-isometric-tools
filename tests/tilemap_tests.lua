@@ -38,7 +38,9 @@ for row = 1, #EXAMPLE_MAP_TILES do
             Vector.new(
                 400 + (TILE_HALF_WIDTH * column) - (row * TILE_HALF_WIDTH),
                 150 + (TILE_QUARTER_HEIGHT * column) + (row * TILE_QUARTER_HEIGHT)
-            )
+            ),
+            TILE_WIDTH,
+            TILE_HEIGHT
         )
         table.insert(EXAMPLE_TILE_LIST, tile)
     end

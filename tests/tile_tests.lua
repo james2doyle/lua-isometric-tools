@@ -7,6 +7,9 @@ lester.parse_args()
 local Vector = require("lib.vector")
 local Tile = require("lib.tile")
 
+local TILE_WIDTH = 32
+local TILE_HEIGHT = TILE_WIDTH
+
 -- Customize lester configuration.
 lester.show_traceback = true
 lester.stop_on_fail = true
@@ -18,7 +21,8 @@ describe("tiles", function()
             "grass",
             Vector.zero(),
             Vector.new(200, 200),
-            nil
+            TILE_WIDTH,
+            TILE_HEIGHT
         )
 
         expect.equal("grass [ 0, 0 ]", tostring(t))
@@ -35,7 +39,8 @@ describe("tiles", function()
             "grass",
             Vector.zero(),
             Vector.new(200, 200),
-            nil
+            TILE_WIDTH,
+            TILE_HEIGHT
         )
 
         local t2 = t:duplicate()
@@ -54,7 +59,8 @@ describe("tiles", function()
             "grass",
             Vector.zero(),
             Vector.new(200, 200),
-            nil
+            TILE_WIDTH,
+            TILE_HEIGHT
         )
 
         local didTrigger = false
@@ -74,7 +80,8 @@ describe("tiles", function()
             "grass",
             Vector.zero(),
             Vector.new(200, 200),
-            nil
+            TILE_WIDTH,
+            TILE_HEIGHT
         )
 
         expect.equal(false, t.hovered)
@@ -92,7 +99,8 @@ describe("tiles", function()
             "grass",
             Vector.zero(),
             Vector.new(200, 200),
-            nil
+            TILE_WIDTH,
+            TILE_HEIGHT
         )
 
         t.hovered = true
@@ -122,7 +130,8 @@ describe("tiles", function()
             "grass",
             Vector.new(1,1),
             Vector.new(200, 200),
-            nil
+            TILE_WIDTH,
+            TILE_HEIGHT
         )
 
         expect.equal('1,0,1', tostring(t:duplicate():up().coords))

@@ -1,14 +1,5 @@
 local Vector = require("lib.vector")
 
--- Tile dimensions and hitbox constants
-local TILE_WIDTH = 32
-local TILE_HALF_WIDTH = TILE_WIDTH / 2
-local TILE_QUARTER_WIDTH = TILE_HALF_WIDTH / 2
-local TILE_HEIGHT = TILE_WIDTH
-local TILE_HALF_HEIGHT = TILE_HEIGHT / 2
-local TILE_QUARTER_HEIGHT = TILE_HALF_HEIGHT / 2
-local TILE_HITBOX_PADDING = 2
-
 ---@class Tile
 ---@field hovered boolean Whether the tile is currently being hovered
 ---@field active boolean Whether the tile is currently selected/active
@@ -21,6 +12,9 @@ local TILE_HITBOX_PADDING = 2
 ---@field events table Table of event callbacks
 ---@field boundingbox table Visual boundaries of the tile
 ---@field hitbox table Interaction boundaries of the tile
+---@field width number The width of the tile
+---@field height number The width of the tile
+---@field padding number The padding for the tile hit box
 ---@field new fun(name: string, texture: string, coords: Vector, center: Vector, decoration?: string, events?: TileEvents, boundingbox?: table, hitbox?: table): Tile Creates a new Tile instance
 ---@field on fun(self: Tile, event: string, callback: fun(self: Tile, ...any)) Register a callback function for a specific event
 ---@field trigger fun(self: Tile, event: string, ...any): any?, nil|string? Trigger a specific event on the tile with optional additional arguments
@@ -144,12 +138,15 @@ local TileEvents = {
 ---@param texture? string The name of the texture to load
 ---@param coords Vector The coordinates on the grid
 ---@param center Vector The center in the world
+---@param width number The width of the tile
+---@param height number The width of the tile
+---@param padding? number The padding of the tile hitbox
 ---@param decoration? string If the tile has an additional texture on the top layer
 ---@param events? table A table of events to trigger for different actions
 ---@param boundingbox? table A table of points that make up the bounding box
 ---@param hitbox? table A table of points that make up the hit box
 ---@return Tile
-function Tile.new(name, texture, coords, center, decoration, events, boundingbox, hitbox)
+function Tile.new(name, texture, coords, center, width, height, padding, decoration, events, boundingbox, hitbox)
     local this = {}
 
     this.hovered = false
@@ -162,6 +159,9 @@ function Tile.new(name, texture, coords, center, decoration, events, boundingbox
 
     this.coords = coords
     this.center = center
+    this.width = width
+    this.height = height
+    this.padding = padding or 2
 
     -- Merge custom events with base events
     local mergedEvents = TileEvents
@@ -172,20 +172,26 @@ function Tile.new(name, texture, coords, center, decoration, events, boundingbox
     end
     this.events = mergedEvents
 
+    -- Tile dimensions and hitbox constants
+    local tileHalfWidth = width / 2
+
+    local tileHalfHeight = height / 2
+    local tileQuarterHeight = tileHalfHeight / 2
+
     this.boundingbox = boundingbox
         or {
-            left = center.x - TILE_HALF_WIDTH,
-            top = center.y - TILE_HEIGHT,
-            right = center.x + TILE_HALF_HEIGHT,
-            bottom = center.y + TILE_HALF_WIDTH,
+            left = center.x - tileHalfWidth,
+            top = center.y - height,
+            right = center.x + tileHalfHeight,
+            bottom = center.y + tileHalfWidth,
         }
 
     this.hitbox = hitbox
         or {
             left = center.x,
-            top = center.y - (TILE_HALF_HEIGHT + TILE_QUARTER_HEIGHT - (TILE_HITBOX_PADDING * 2)),
-            right = center.x + TILE_HALF_HEIGHT,
-            bottom = center.y + TILE_HALF_WIDTH,
+            top = center.y - (tileHalfHeight + tileQuarterHeight - (this.padding * 2)),
+            right = center.x + tileHalfHeight,
+            bottom = center.y + tileHalfWidth,
         }
 
     setmetatable(this, {
@@ -229,6 +235,9 @@ function Tile:duplicate()
         self.texture,
         self.coords,
         self.center,
+        self.width,
+        self.height,
+        self.padding,
         self.decoration,
         self.events,
         self.boundingbox,
@@ -294,7 +303,7 @@ function Tile:move(direction)
     error("no direction matching " .. direction)
 end
 
----Check if the tile "top" is being hovered over
+---Check if the tile "top" is being hovered over, this assumes the hover area is a circle
 ---@return boolean
 function Tile:isHovered(pointer)
     -- Calculate the squared distances
@@ -304,7 +313,7 @@ function Tile:isHovered(pointer)
     local distance_squared = dx_squared ^ 2 + dy_squared ^ 2
 
     -- Check if the squared distance is less than or equal to the squared radius
-    return distance_squared <= TILE_QUARTER_HEIGHT ^ 2
+    return distance_squared <= (self.height / 4) ^ 2
 end
 
 return Tile
