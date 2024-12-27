@@ -28,7 +28,7 @@ function assets:get(name)
     return self.catalog[name]
 end
 
-local map = {
+local groundLayer = {
     { "box", "box", "box", "empty", "box", "box", "box" },
     { "box", "box", "box", "box", "box", "box", "box" },
     { "box", "box", "box", "box", "box", "box", "box" },
@@ -85,8 +85,8 @@ function love.load()
         end,
     }
 
-    for row = 1, #map do
-        for column, tex in ipairs(map[row]) do
+    for row = 1, #groundLayer do
+        for column, tex in ipairs(groundLayer[row]) do
             if tex == "empty" then
               goto continue
             end
