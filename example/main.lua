@@ -14,33 +14,43 @@ local TILE_HITBOX_PADDING = 2
 local DEBUG = false
 
 local tileStates = {
-    active = nil,
-    hovered = nil,
+  active = nil,
+  hovered = nil,
 }
 
 local assets = { catalog = {} }
 
 function assets:add(name, image)
-    self.catalog[name] = image
+  self.catalog[name] = image
 end
 
 function assets:get(name)
-    return self.catalog[name]
+  return self.catalog[name]
 end
 
 local groundLayer = {
-    { "box", "box", "box", "empty", "box", "box", "box" },
-    { "box", "box", "box", "box", "box", "box", "box" },
-    { "box", "box", "box", "box", "box", "box", "box" },
-    { "empty", "box", "box", "box", "box", "box", "empty" },
-    { "box", "box", "box", "box", "box", "box", "box" },
-    { "box", "box", "box", "box", "box", "empty", "box" },
-    { "box", "box", "box", "box", "box", "box", "box" },
+  { "box", "box", "box", "empty", "box", "box", "box" },
+  { "box", "box", "box", "box", "box", "box", "box" },
+  { "box", "box", "box", "box", "box", "box", "box" },
+  { "empty", "box", "box", "box", "box", "box", "empty" },
+  { "box", "box", "box", "box", "box", "box", "box" },
+  { "box", "box", "box", "box", "box", "empty", "box" },
+  { "box", "box", "box", "box", "box", "box", "box" },
+}
+
+local wallLayer = {
+  { "empty", "empty", "empty", "box", "empty", "empty", "empty" },
+  { "empty", "empty", "empty", "empty", "empty", "empty", "empty" },
+  { "empty", "empty", "empty", "empty", "empty", "empty", "empty" },
+  { "box", "empty", "empty", "empty", "empty", "empty", "box" },
+  { "empty", "empty", "empty", "empty", "empty", "empty", "empty" },
+  { "empty", "empty", "empty", "empty", "empty", "box", "empty" },
+  { "empty", "empty", "empty", "empty", "empty", "empty", "empty" },
 }
 
 local tiles = {}
 
-local tileMap = TileMap.new("ground", {})
+local groundMap = TileMap.new("ground", {})
 
 function love.load()
     assets:add("box", love.graphics.newImage("assets/box.png"))
@@ -62,7 +72,7 @@ function love.load()
                 nil,
                 TILE_HALF_WIDTH,
                 TILE_HALF_HEIGHT
-            )
+                )
 
             if DEBUG then
                 -- green
@@ -76,7 +86,7 @@ function love.load()
                     tile.hitbox.left,
                     tile.hitbox.top,
                     TILE_QUARTER_HEIGHT + (TILE_HITBOX_PADDING * 2)
-                )
+                    )
 
                 -- red
                 love.graphics.setColor(1, 0, 0)
@@ -88,12 +98,12 @@ function love.load()
     for row = 1, #groundLayer do
         for column, tex in ipairs(groundLayer[row]) do
             if tex == "empty" then
-              goto continue
+                goto continue
             end
             local center = Vector.new(
                 400 + (TILE_HALF_WIDTH * column) - (row * TILE_HALF_WIDTH),
                 150 + (TILE_QUARTER_HEIGHT * column) + (row * TILE_QUARTER_HEIGHT)
-            )
+                )
             local tile = Tile.new("boxTile", tex, Vector.new(column - 1, row - 1), center, TILE_WIDTH, TILE_HEIGHT, nil, nil, tileEvents, {
                 left = center.x - TILE_HALF_WIDTH,
                 top = center.y - TILE_HALF_HEIGHT,
@@ -111,9 +121,38 @@ function love.load()
         end
     end
 
-    tileMap.tiles = tiles
+    for row = 1, #wallLayer do
+        for column, tex in ipairs(wallLayer[row]) do
+            if tex == "empty" then
+                goto continue
+            end
+            local center = Vector.new(
+                400 + (TILE_HALF_WIDTH * column) - (row * TILE_HALF_WIDTH),
+                -- walls are an extra half step higher
+                150 + (TILE_QUARTER_HEIGHT * column) + (row * TILE_QUARTER_HEIGHT) - TILE_QUARTER_HEIGHT - TILE_HITBOX_PADDING,
+                -- walls are on the level 2
+                2
+                )
+            local tile = Tile.new("wallTile", tex, Vector.new(column - 1, row - 1), center, TILE_WIDTH, TILE_HEIGHT, nil, nil, tileEvents, {
+                left = center.x - TILE_HALF_WIDTH,
+                top = center.y - TILE_HALF_HEIGHT,
+                right = center.x + TILE_HALF_HEIGHT,
+                bottom = center.y + TILE_HALF_WIDTH,
+            }, {
+                left = center.x,
+                top = center.y + TILE_HITBOX_PADDING,
+                right = center.x + TILE_HALF_HEIGHT,
+                bottom = center.y + TILE_HALF_WIDTH,
+            })
 
-    tileStates.active = tileMap:findTileAt(3, 3)
+            table.insert(tiles, tile)
+            ::continue::
+        end
+    end
+
+    groundMap.tiles = tiles
+
+    tileStates.active = groundMap:findTileAt(5, 2)
 end
 
 function love.update(dt)
@@ -142,67 +181,74 @@ function love.keypressed(key, code, isRepeat)
         DEBUG = not DEBUG
     end
     if tileStates.active ~= nil then
+        -- the tiles are all part of the same map and their coordinates are not actually taking into account their "z position"
+        -- we are just drawing them at different Y positions based on their "layer" which allows us to move to them as if they were higher even though they aren't actually
         if code == "up" then
-            local moveTo = tileMap:upFrom(tileStates.active)
+            local moveTo = groundMap:upFrom(tileStates.active)
             if moveTo ~= nil then
-              tileStates.active = tileMap:upFrom(tileStates.active)
+                tileStates.active = groundMap:upFrom(tileStates.active)
             end
         end
         if code == "down" then
-            local moveTo = tileMap:downFrom(tileStates.active)
+            local moveTo = groundMap:downFrom(tileStates.active)
             if moveTo ~= nil then
-              tileStates.active = tileMap:downFrom(tileStates.active)
+                tileStates.active = groundMap:downFrom(tileStates.active)
             end
         end
         if code == "left" then
-            local moveTo = tileMap:leftFrom(tileStates.active)
+            local moveTo = groundMap:leftFrom(tileStates.active)
             if moveTo ~= nil then
-              tileStates.active = tileMap:leftFrom(tileStates.active)
+                tileStates.active = groundMap:leftFrom(tileStates.active)
             end
         end
         if code == "right" then
-            local moveTo = tileMap:rightFrom(tileStates.active)
+            local moveTo = groundMap:rightFrom(tileStates.active)
             if moveTo ~= nil then
-              tileStates.active = tileMap:rightFrom(tileStates.active)
+                tileStates.active = groundMap:rightFrom(tileStates.active)
             end
         end
     end
 end
 
 function love.draw()
-    for _, tile in pairs(tiles) do
-        love.graphics.setColor(1, 1, 1)
-        tile:trigger("draw")
-    end
+    -- loop over everything again and draw the second layer
+    -- this allows use to draw the ground "under" the "wall" layer
+    for index = 1, 2 do
+        for _, tile in pairs(tiles) do
+            if tile.center.z == index then
+                tile:trigger("draw")
+            end
 
-    if tileStates.hovered ~= nil then
-        love.graphics.setColor(1, 1, 1)
+            if tileStates.active ~= nil and tileStates.active.center.z == index then
+                love.graphics.setColor(1, 1, 1)
 
-        love.graphics.draw(
-            assets:get("overlay"),
-            tileStates.hovered.center.x,
-            tileStates.hovered.center.y,
-            nil,
-            nil,
-            nil,
-            TILE_HALF_WIDTH,
-            TILE_HALF_HEIGHT
-        )
-    end
+                love.graphics.draw(
+                    assets:get("selection"),
+                    tileStates.active.center.x,
+                    tileStates.active.center.y,
+                    nil,
+                    nil,
+                    nil,
+                    TILE_HALF_WIDTH,
+                    TILE_HALF_HEIGHT
+                    )
+            end
 
-    if tileStates.active ~= nil then
-        love.graphics.setColor(1, 1, 1)
+            if tileStates.hovered ~= nil and tileStates.hovered.center.z == index then
+                love.graphics.setColor(1, 1, 1)
 
-        love.graphics.draw(
-            assets:get("selection"),
-            tileStates.active.center.x,
-            tileStates.active.center.y,
-            nil,
-            nil,
-            nil,
-            TILE_HALF_WIDTH,
-            TILE_HALF_HEIGHT
-        )
+                love.graphics.draw(
+                    assets:get("overlay"),
+                    tileStates.hovered.center.x,
+                    tileStates.hovered.center.y,
+                    nil,
+                    nil,
+                    nil,
+                    TILE_HALF_WIDTH,
+                    TILE_HALF_HEIGHT
+                    )
+            end
+        end
     end
 
     if DEBUG then
