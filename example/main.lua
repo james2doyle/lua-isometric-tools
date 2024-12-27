@@ -5,13 +5,10 @@ local Tile = require("lib.tile")
 -- Tile dimensions and hitbox constants
 local TILE_WIDTH = 32
 local TILE_HALF_WIDTH = TILE_WIDTH / 2
-local TILE_QUARTER_WIDTH = TILE_HALF_WIDTH / 2
 local TILE_HEIGHT = TILE_WIDTH
 local TILE_HALF_HEIGHT = TILE_HEIGHT / 2
 local TILE_QUARTER_HEIGHT = TILE_HALF_HEIGHT / 2
 local TILE_HITBOX_PADDING = 2
-
-local loadTimeStart = love.timer.getTime()
 
 -- press "`" to toggle debugging
 local DEBUG = false
@@ -48,6 +45,8 @@ local tileMap = TileMap.new("ground", {})
 function love.load()
     assets:add("box", love.graphics.newImage("assets/box.png"))
     assets:add("overlay", love.graphics.newImage("assets/overlay.png"))
+    assets:add("selection", love.graphics.newImage("assets/selection.png"))
+    assets:add("area", love.graphics.newImage("assets/area.png"))
 
     local tileEvents = {
         ---@param tile Tile
@@ -92,7 +91,7 @@ function love.load()
                 400 + (TILE_HALF_WIDTH * column) - (row * TILE_HALF_WIDTH),
                 150 + (TILE_QUARTER_HEIGHT * column) + (row * TILE_QUARTER_HEIGHT)
             )
-            local tile = Tile.new("boxTile", tex, Vector.new(column - 1, row - 1), center, nil, tileEvents, {
+            local tile = Tile.new("boxTile", tex, Vector.new(column - 1, row - 1), center, TILE_WIDTH, TILE_HEIGHT, nil, nil, tileEvents, {
                 left = center.x - TILE_HALF_WIDTH,
                 top = center.y - TILE_HALF_HEIGHT,
                 right = center.x + TILE_HALF_HEIGHT,
@@ -178,7 +177,7 @@ function love.draw()
         love.graphics.setColor(1, 1, 1)
 
         love.graphics.draw(
-            assets:get("overlay"),
+            assets:get("selection"),
             tileStates.active.center.x,
             tileStates.active.center.y,
             nil,
