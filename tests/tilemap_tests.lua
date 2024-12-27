@@ -137,6 +137,22 @@ describe("tilemaps", function()
 
         expect.equal("changedTile", EXAMPLE_TILE_LIST[1].name)
     end)
+
+    it("can find neighbour tiles at a given distance", function()
+        local t = TileMap.new("ground", EXAMPLE_TILE_LIST)
+
+        local tile = t:findTileAt(2, 2)
+
+        local nothingFound = t:getNeighboursFor(tile, 0)
+        local fourFound = t:getNeighboursFor(tile, 2)
+        local fourFoundExclusive = t:getNeighboursFor(tile, 2)
+        local eightFoundInclusive = t:getNeighboursFor(tile, 2, true)
+
+        expect.equal(nil, nothingFound)
+        expect.equal(4, #fourFound)
+        expect.equal(4, #fourFoundExclusive)
+        expect.equal(8, #eightFoundInclusive)
+    end)
 end)
 
 lester.report() -- Print overall statistic of the tests run.

@@ -79,6 +79,7 @@ local TileMapEvents = {
 ---@field findTileAt fun(self:TileMap, coordsOrX: Vector|number, y?: number): Tile|nil
 ---@field tileRadiusWithin fun(self:TileMap, tile: Tile, radius: number, offset: number)
 ---@field replace fun(self:TileMap, oldTile: Tile, newTile: Tile)
+---@field getNeighboursFor fun(self:TileMap, tile: Tile, distance?: number, inclusive? boolean): Tile[]
 ---@field upFrom fun(self:TileMap, tile: Tile, distance?: number): Tile|nil
 ---@field downFrom fun(self:TileMap, tile: Tile, distance?: number): Tile|nil
 ---@field leftFrom fun(self:TileMap, tile: Tile, distance?: number): Tile|nil
@@ -221,6 +222,43 @@ function TileMap:replace(oldTile, newTile)
     self.tiles[replace] = newTile
 
     return true
+end
+
+--- Finds neighbour tiles at a distance from a given tile, without inclusive, tile distance skips tiles
+---@param tile Tile the tile to start on
+---@param distance? number the number of tiles to fetch from the starting tile
+---@param inclusive? boolean flag for if all tiles are included or just the end target ones
+---@return Tile[]|nil
+function TileMap:getNeighboursFor(tile, distance, inclusive)
+    if distance == 0 then
+      return nil
+    end
+
+    local step = distance or 1
+    local collectAll = inclusive or false
+
+    -- if you want to collect all but your distance is 1, then this is the same
+    if collectAll == false or distance == 1 then
+        local foundTiles = {
+            self:upFrom(tile, step),
+            self:downFrom(tile, step),
+            self:leftFrom(tile, step),
+            self:rightFrom(tile, step)
+        }
+
+        return foundTiles
+    end
+
+    local allTiles = {}
+
+    for i = 1, distance do
+        table.insert(allTiles, self:upFrom(tile, i))
+        table.insert(allTiles, self:downFrom(tile, i))
+        table.insert(allTiles, self:leftFrom(tile, i))
+        table.insert(allTiles, self:rightFrom(tile, i))
+    end
+
+    return allTiles
 end
 
 ---Get the tile up by a given grid/iso distance (y coord -)
