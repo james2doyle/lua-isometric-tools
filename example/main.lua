@@ -16,6 +16,9 @@ local DEBUG = false
 local tileStates = {
   active = nil,
   hovered = nil,
+  areaTiles = nil,
+  areaDistance = 0,
+  tileInclusive = false
 }
 
 local assets = { catalog = {} }
@@ -152,11 +155,11 @@ function love.load()
 
     groundMap.tiles = tiles
 
-    tileStates.active = groundMap:findTileAt(5, 2)
+    tileStates.active = groundMap:findTileAt(3, 3)
 end
 
 function love.update(dt)
-    ---@todo update
+    tileStates.areaTiles = groundMap:getNeighboursFor(tileStates.active, tileStates.areaDistance, tileStates.tileInclusive)
 end
 
 function love.mousemoved(mx, my)
@@ -180,7 +183,20 @@ function love.keypressed(key, code, isRepeat)
     if code == "`" then
         DEBUG = not DEBUG
     end
+
     if tileStates.active ~= nil then
+        if code == "a" then
+            tileStates.areaDistance = tileStates.areaDistance + 1
+        end
+
+        if code == "s" and tileStates.areaDistance > 0 then
+            tileStates.areaDistance = tileStates.areaDistance - 1
+        end
+
+        if code == "d" then
+            tileStates.tileInclusive = not tileStates.tileInclusive
+        end
+
         -- the tiles are all part of the same map and their coordinates are not actually taking into account their "z position"
         -- we are just drawing them at different Y positions based on their "layer" which allows us to move to them as if they were higher even though they aren't actually
         if code == "up" then
@@ -247,6 +263,24 @@ function love.draw()
                     TILE_HALF_WIDTH,
                     TILE_HALF_HEIGHT
                     )
+            end
+        end
+        if tileStates.areaTiles ~= nil and tileStates.areaDistance > 0 then
+            for _, tile in pairs(tileStates.areaTiles) do
+                if tile.center.z == index then
+                    love.graphics.setColor(1, 1, 1)
+
+                    love.graphics.draw(
+                        assets:get("area"),
+                        tile.center.x,
+                        tile.center.y,
+                        nil,
+                        nil,
+                        nil,
+                        TILE_HALF_WIDTH,
+                        TILE_HALF_HEIGHT
+                        )
+                end
             end
         end
     end
