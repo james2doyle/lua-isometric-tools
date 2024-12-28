@@ -2,6 +2,9 @@ local Vector = require("lib.vector")
 local TileMap = require("lib.tilemap")
 local Tile = require("lib.tile")
 
+local windowWidth = love.graphics.getWidth()
+local windowHeight = love.graphics.getHeight()
+
 -- Tile dimensions and hitbox constants
 local TILE_WIDTH = 32
 local TILE_HALF_WIDTH = TILE_WIDTH / 2
@@ -55,48 +58,71 @@ local tiles = {}
 
 local groundMap = TileMap.new("ground", {})
 
+function love.resize(w, h)
+    if w ~= nil then
+        windowWidth = w
+    end
+    if h ~= nil then
+        windowHeight = h
+    end
+end
+
+local tileEvents = {
+    ---@param tile Tile
+    draw = function(tile)
+        love.graphics.setColor(1, 1, 1)
+
+        love.graphics.draw(
+            assets:get(tile.texture),
+            tile.center.x,
+            tile.center.y,
+            nil,
+            nil,
+            nil,
+            TILE_HALF_WIDTH,
+            TILE_HALF_HEIGHT
+            )
+
+        if DEBUG then
+            -- green
+            love.graphics.setColor(0, 1, 0)
+            love.graphics.rectangle("line", tile.boundingbox.left, tile.boundingbox.top, TILE_HEIGHT, TILE_WIDTH)
+
+            -- blue
+            love.graphics.setColor(0, 0, 1)
+            love.graphics.circle(
+                "line",
+                tile.hitbox.left,
+                tile.hitbox.top,
+                TILE_QUARTER_HEIGHT + (TILE_HITBOX_PADDING * 2)
+                )
+
+            -- red
+            love.graphics.setColor(1, 0, 0)
+            love.graphics.points(tile.center.x, tile.center.y)
+        end
+    end,
+}
+
+local function makeTile(center, tex, column, row)
+    return Tile.new(tex .. "Tile", tex, Vector.new(column - 1, row - 1), center, TILE_WIDTH, TILE_HEIGHT, nil, nil, tileEvents, {
+        left = center.x - TILE_HALF_WIDTH,
+        top = center.y - TILE_HALF_HEIGHT,
+        right = center.x + TILE_HALF_HEIGHT,
+        bottom = center.y + TILE_HALF_WIDTH,
+    }, {
+        left = center.x,
+        top = center.y + TILE_HITBOX_PADDING,
+        right = center.x + TILE_HALF_HEIGHT,
+        bottom = center.y + TILE_HALF_WIDTH,
+    })
+end
+
 function love.load()
     assets:add("box", love.graphics.newImage("assets/box.png"))
     assets:add("overlay", love.graphics.newImage("assets/overlay.png"))
     assets:add("selection", love.graphics.newImage("assets/selection.png"))
     assets:add("area", love.graphics.newImage("assets/area.png"))
-
-    local tileEvents = {
-        ---@param tile Tile
-        draw = function(tile)
-            love.graphics.setColor(1, 1, 1)
-
-            love.graphics.draw(
-                assets:get(tile.texture),
-                tile.center.x,
-                tile.center.y,
-                nil,
-                nil,
-                nil,
-                TILE_HALF_WIDTH,
-                TILE_HALF_HEIGHT
-                )
-
-            if DEBUG then
-                -- green
-                love.graphics.setColor(0, 1, 0)
-                love.graphics.rectangle("line", tile.boundingbox.left, tile.boundingbox.top, TILE_HEIGHT, TILE_WIDTH)
-
-                -- blue
-                love.graphics.setColor(0, 0, 1)
-                love.graphics.circle(
-                    "line",
-                    tile.hitbox.left,
-                    tile.hitbox.top,
-                    TILE_QUARTER_HEIGHT + (TILE_HITBOX_PADDING * 2)
-                    )
-
-                -- red
-                love.graphics.setColor(1, 0, 0)
-                love.graphics.points(tile.center.x, tile.center.y)
-            end
-        end,
-    }
 
     for row = 1, #groundLayer do
         for column, tex in ipairs(groundLayer[row]) do
@@ -104,20 +130,10 @@ function love.load()
                 goto continue
             end
             local center = Vector.new(
-                400 + (TILE_HALF_WIDTH * column) - (row * TILE_HALF_WIDTH),
-                150 + (TILE_QUARTER_HEIGHT * column) + (row * TILE_QUARTER_HEIGHT)
-                )
-            local tile = Tile.new("boxTile", tex, Vector.new(column - 1, row - 1), center, TILE_WIDTH, TILE_HEIGHT, nil, nil, tileEvents, {
-                left = center.x - TILE_HALF_WIDTH,
-                top = center.y - TILE_HALF_HEIGHT,
-                right = center.x + TILE_HALF_HEIGHT,
-                bottom = center.y + TILE_HALF_WIDTH,
-            }, {
-                left = center.x,
-                top = center.y + TILE_HITBOX_PADDING,
-                right = center.x + TILE_HALF_HEIGHT,
-                bottom = center.y + TILE_HALF_WIDTH,
-            })
+                (windowWidth / 2) + (TILE_HALF_WIDTH * column) - (row * TILE_HALF_WIDTH),
+                (windowHeight / 4) + (TILE_QUARTER_HEIGHT * column) + (row * TILE_QUARTER_HEIGHT)
+            )
+            local tile = makeTile(center, tex, column, row)
 
             table.insert(tiles, tile)
             ::continue::
@@ -130,23 +146,13 @@ function love.load()
                 goto continue
             end
             local center = Vector.new(
-                400 + (TILE_HALF_WIDTH * column) - (row * TILE_HALF_WIDTH),
+                (windowWidth / 2) + (TILE_HALF_WIDTH * column) - (row * TILE_HALF_WIDTH),
                 -- walls are an extra half step higher
-                150 + (TILE_QUARTER_HEIGHT * column) + (row * TILE_QUARTER_HEIGHT) - TILE_QUARTER_HEIGHT - TILE_HITBOX_PADDING,
+                (windowHeight / 4) + (TILE_QUARTER_HEIGHT * column) + (row * TILE_QUARTER_HEIGHT) - TILE_QUARTER_HEIGHT - TILE_HITBOX_PADDING,
                 -- walls are on the level 2
                 2
-                )
-            local tile = Tile.new("wallTile", tex, Vector.new(column - 1, row - 1), center, TILE_WIDTH, TILE_HEIGHT, nil, nil, tileEvents, {
-                left = center.x - TILE_HALF_WIDTH,
-                top = center.y - TILE_HALF_HEIGHT,
-                right = center.x + TILE_HALF_HEIGHT,
-                bottom = center.y + TILE_HALF_WIDTH,
-            }, {
-                left = center.x,
-                top = center.y + TILE_HITBOX_PADDING,
-                right = center.x + TILE_HALF_HEIGHT,
-                bottom = center.y + TILE_HALF_WIDTH,
-            })
+            )
+            local tile = makeTile(center, tex, column, row)
 
             table.insert(tiles, tile)
             ::continue::
@@ -159,7 +165,7 @@ function love.load()
 end
 
 function love.update(dt)
-    tileStates.areaTiles = groundMap:getNeighboursFor(tileStates.active, tileStates.areaDistance, tileStates.tileInclusive)
+    -- tileStates.areaTiles = groundMap:getNeighboursFor(tileStates.active, tileStates.areaDistance, tileStates.tileInclusive)
 end
 
 function love.mousemoved(mx, my)
@@ -223,6 +229,8 @@ function love.keypressed(key, code, isRepeat)
                 tileStates.active = groundMap:rightFrom(tileStates.active)
             end
         end
+
+        tileStates.areaTiles = groundMap:getNeighboursFor(tileStates.active, tileStates.areaDistance, tileStates.tileInclusive)
     end
 end
 
