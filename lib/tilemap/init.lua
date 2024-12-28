@@ -77,7 +77,7 @@ local TileMapEvents = {
 ---@field trigger fun(self: TileMap, event: string, ...any): any?, nil|string? Trigger a specific event on the tile map with optional additional arguments
 ---@field tileLineFrom fun(self:TileMap, tile: Tile, direction, distance)
 ---@field findTileAt fun(self:TileMap, coordsOrX: Vector|number, y?: number): Tile|nil
----@field tileRadiusWithin fun(self:TileMap, tile: Tile, radius: number, offset: number)
+---@field tileRadiusWithin fun(self:TileMap, tile: Tile, radius?: number, offset?: number)
 ---@field replace fun(self:TileMap, oldTile: Tile, newTile: Tile)
 ---@field getNeighboursFor fun(self:TileMap, tile: Tile, distance?: number, inclusive? boolean): Tile[]
 ---@field upFrom fun(self:TileMap, tile: Tile, distance?: number): Tile|nil
@@ -207,20 +207,34 @@ end
 
 --- Gets the tiles that are within a certain radius of a given tile (area of effect)
 ---@param tile Tile
----@param radius number how large the area will be
----@param offset number how far away from the initial tile to start selecting tiles
+---@param radius? number how large the area will be
+---@param offset? number how far away from the initial tile to start selecting tiles
+---@return Tile[]|nil
 function TileMap:tileRadiusWithin(tile, radius, offset)
     local step = radius or 1
     local off = offset or 0
 
-    local foundTiles = {
-        self:upFrom(tile, step),
-        self:downFrom(tile, step),
-        self:leftFrom(tile, step),
-        self:rightFrom(tile, step),
-    }
+    -- we can't find anything with 0 movement
+    if step == 0 and off == 0 then
+        return nil
+    end
 
-    return foundTiles
+    -- just return the immediate surrounding tiles
+    if step == 1 and off == 0 then
+        return {
+            self:upFrom(tile, step),
+            self:downFrom(tile, step),
+            self:leftFrom(tile, step),
+            self:rightFrom(tile, step),
+            self:northFrom(tile, step),
+            self:southFrom(tile, step),
+            self:eastFrom(tile, step),
+            self:westFrom(tile, step)
+        }
+    end
+
+    ---@todo support grabbing a larger area
+    return {}
 end
 
 --- Replaces a Tile with a new one. Returns true on success and false on missing tile

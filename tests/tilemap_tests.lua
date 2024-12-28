@@ -178,6 +178,32 @@ describe("tilemaps", function()
         expect.equal('3,1,1', tostring(west.coords))
     end)
 
+    it("can find tiles within a given radius", function()
+        local t = TileMap.new("ground", EXAMPLE_TILE_LIST)
+
+        local tile = t:findTileAt(2, 2)
+
+        local foundTiles = t:tileRadiusWithin(tile)
+
+        local up = foundTiles[1]
+        local down = foundTiles[2]
+        local left = foundTiles[3]
+        local right = foundTiles[4]
+        local north = foundTiles[5]
+        local south = foundTiles[6]
+        local east = foundTiles[7]
+        local west = foundTiles[8]
+
+        expect.equal('2,1,1', tostring(up.coords))
+        expect.equal('2,3,1', tostring(down.coords))
+        expect.equal('1,2,1', tostring(left.coords))
+        expect.equal('3,2,1', tostring(right.coords))
+        expect.equal('1,1,1', tostring(north.coords))
+        expect.equal('3,3,1', tostring(south.coords))
+        expect.equal('1,3,1', tostring(east.coords))
+        expect.equal('3,1,1', tostring(west.coords))
+    end)
+
     ---@todo test radius
 end)
 
