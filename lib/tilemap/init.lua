@@ -84,6 +84,10 @@ local TileMapEvents = {
 ---@field downFrom fun(self:TileMap, tile: Tile, distance?: number): Tile|nil
 ---@field leftFrom fun(self:TileMap, tile: Tile, distance?: number): Tile|nil
 ---@field rightFrom fun(self:TileMap, tile: Tile, distance?: number): Tile|nil
+---@field northFrom fun(self:TileMap, tile: Tile, distance?: number): Tile|nil
+---@field southFrom fun(self:TileMap, tile: Tile, distance?: number): Tile|nil
+---@field eastFrom fun(self:TileMap, tile: Tile, distance?: number): Tile|nil
+---@field westFrom fun(self:TileMap, tile: Tile, distance?: number): Tile|nil
 
 ---Creates a new TileMap instance
 ---@param name? string The label for this tile map
@@ -144,10 +148,16 @@ function TileMap:trigger(event, ...)
 end
 
 local directionVec = {
+    -- grid/iso directions
     up = Vector.new(0, -1),
     down = Vector.new(0, 1),
     left = Vector.new(-1, 0),
     right = Vector.new(1, 0),
+    -- world directions
+    north = Vector.new(-1, -1),
+    south = Vector.new(1, 1),
+    east = Vector.new(-1, 1),
+    west = Vector.new(1, -1)
 }
 
 --- Get the tiles that are in a "straight" line from the given tile
@@ -197,10 +207,20 @@ end
 
 --- Gets the tiles that are within a certain radius of a given tile (area of effect)
 ---@param tile Tile
----@param radius number
----@param offset number
+---@param radius number how large the area will be
+---@param offset number how far away from the initial tile to start selecting tiles
 function TileMap:tileRadiusWithin(tile, radius, offset)
-    ---@todo implementation
+    local step = radius or 1
+    local off = offset or 0
+
+    local foundTiles = {
+        self:upFrom(tile, step),
+        self:downFrom(tile, step),
+        self:leftFrom(tile, step),
+        self:rightFrom(tile, step),
+    }
+
+    return foundTiles
 end
 
 --- Replaces a Tile with a new one. Returns true on success and false on missing tile
@@ -301,6 +321,47 @@ end
 function TileMap:rightFrom(tile, distance)
     local step = distance or 1
     local newCoords = tile.coords + (directionVec.right * step)
+
+    return self:findTileAt(newCoords)
+end
+
+---Get the tile north (word space) by a given grid/iso distance
+---@param tile Tile
+---@param distance? number
+---@return Tile|nil
+function TileMap:northFrom(tile, distance)
+    local step = distance or 1
+    local newCoords = tile.coords + (directionVec.north * step)
+
+    return self:findTileAt(newCoords)
+end
+---Get the tile south (word space) by a given grid/iso distance
+---@param tile Tile
+---@param distance? number
+---@return Tile|nil
+function TileMap:southFrom(tile, distance)
+    local step = distance or 1
+    local newCoords = tile.coords + (directionVec.south * step)
+
+    return self:findTileAt(newCoords)
+end
+---Get the tile east (word space) by a given grid/iso distance
+---@param tile Tile
+---@param distance? number
+---@return Tile|nil
+function TileMap:eastFrom(tile, distance)
+    local step = distance or 1
+    local newCoords = tile.coords + (directionVec.east * step)
+
+    return self:findTileAt(newCoords)
+end
+---Get the tile west (word space) by a given grid/iso distance
+---@param tile Tile
+---@param distance? number
+---@return Tile|nil
+function TileMap:westFrom(tile, distance)
+    local step = distance or 1
+    local newCoords = tile.coords + (directionVec.west * step)
 
     return self:findTileAt(newCoords)
 end

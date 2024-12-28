@@ -153,6 +153,32 @@ describe("tilemaps", function()
         expect.equal(4, #fourFoundExclusive)
         expect.equal(8, #eightFoundInclusive)
     end)
+
+    it("can find tiles given direction", function()
+        local t = TileMap.new("ground", EXAMPLE_TILE_LIST)
+
+        local tile = t:findTileAt(2, 2)
+
+        local up = t:upFrom(tile, 1)
+        local down = t:downFrom(tile, 1)
+        local left = t:leftFrom(tile, 1)
+        local right = t:rightFrom(tile, 1)
+        local north = t:northFrom(tile, 1)
+        local south = t:southFrom(tile, 1)
+        local east = t:eastFrom(tile, 1)
+        local west = t:westFrom(tile, 1)
+
+        expect.equal('2,1,1', tostring(up.coords))
+        expect.equal('2,3,1', tostring(down.coords))
+        expect.equal('1,2,1', tostring(left.coords))
+        expect.equal('3,2,1', tostring(right.coords))
+        expect.equal('1,1,1', tostring(north.coords))
+        expect.equal('3,3,1', tostring(south.coords))
+        expect.equal('1,3,1', tostring(east.coords))
+        expect.equal('3,1,1', tostring(west.coords))
+    end)
+
+    ---@todo test radius
 end)
 
 lester.report() -- Print overall statistic of the tests run.
