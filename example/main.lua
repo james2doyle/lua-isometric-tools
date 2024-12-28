@@ -21,7 +21,8 @@ local tileStates = {
   hovered = nil,
   areaTiles = nil,
   areaDistance = 0,
-  tileInclusive = false
+  tileInclusive = false,
+  areaRadius = false
 }
 
 local assets = { catalog = {} }
@@ -191,6 +192,10 @@ function love.keypressed(key, code, isRepeat)
     end
 
     if tileStates.active ~= nil then
+        if code == "r" then
+          tileStates.areaRadius = not tileStates.areaRadius
+        end
+
         if code == "a" then
             tileStates.areaDistance = tileStates.areaDistance + 1
         end
@@ -230,7 +235,11 @@ function love.keypressed(key, code, isRepeat)
             end
         end
 
-        tileStates.areaTiles = groundMap:getNeighboursFor(tileStates.active, tileStates.areaDistance, tileStates.tileInclusive)
+        if tileStates.areaRadius == false then
+            tileStates.areaTiles = groundMap:getNeighboursFor(tileStates.active, tileStates.areaDistance, tileStates.tileInclusive)
+        else
+            tileStates.areaTiles = groundMap:tileRadiusWithin(tileStates.active, tileStates.areaDistance)
+        end
     end
 end
 
