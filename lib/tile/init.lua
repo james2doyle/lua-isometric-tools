@@ -23,6 +23,7 @@ local Vector = require("lib.vector")
 ---@field down fun(self: Tile): Tile Move tile down one grid position
 ---@field left fun(self: Tile): Tile Move tile left one grid position
 ---@field right fun(self: Tile): Tile Move tile right one grid position
+---@field isHovered fun(self: Tile, pointer: Vector): boolean Check if the tile is being hovered over, this assumes the hover area is a circle
 
 local Tile = { __type = "Tile" }
 Tile.__index = Tile
@@ -174,14 +175,12 @@ function Tile.new(name, texture, coords, center, width, height, padding, decorat
 
     -- Tile dimensions and hitbox constants
     local tileHalfWidth = width / 2
-
     local tileHalfHeight = height / 2
-    local tileQuarterHeight = tileHalfHeight / 2
 
     this.boundingbox = boundingbox
         or {
             left = center.x - tileHalfWidth,
-            top = center.y - height,
+            top = center.y - tileHalfHeight,
             right = center.x + tileHalfHeight,
             bottom = center.y + tileHalfWidth,
         }
@@ -189,7 +188,7 @@ function Tile.new(name, texture, coords, center, width, height, padding, decorat
     this.hitbox = hitbox
         or {
             left = center.x,
-            top = center.y - (tileHalfHeight + tileQuarterHeight - (this.padding * 2)),
+            top = center.y + this.padding,
             right = center.x + tileHalfHeight,
             bottom = center.y + tileHalfWidth,
         }
@@ -303,7 +302,8 @@ function Tile:move(direction)
     error("no direction matching " .. direction)
 end
 
----Check if the tile "top" is being hovered over, this assumes the hover area is a circle
+---Check if the tile is being hovered over, this assumes the hover area is a circle
+---@param pointer Vector the pointer position as a Vector
 ---@return boolean
 function Tile:isHovered(pointer)
     -- Calculate the squared distances

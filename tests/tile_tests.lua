@@ -139,6 +139,25 @@ describe("tiles", function()
         expect.equal('0,1,1', tostring(t:duplicate():left().coords))
         expect.equal('2,1,1', tostring(t:duplicate():right().coords))
     end)
+
+    it("can check if a tile is hovered", function()
+        local t = Tile.new(
+            "grassTile",
+            "grass",
+            Vector.new(1,1),
+            Vector.new(200, 200),
+            TILE_WIDTH,
+            TILE_HEIGHT
+        )
+
+        local pointer = Vector.new(201, 201)
+        local isHovered = t:isHovered(pointer)
+        local pointer2 = Vector.new(190, 190)
+        local isNotHovered = t:isHovered(pointer2)
+
+        expect.equal(true, isHovered)
+        expect.equal(false, isNotHovered)
+    end)
 end)
 
 lester.report() -- Print overall statistic of the tests run.
