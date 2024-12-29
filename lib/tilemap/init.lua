@@ -81,6 +81,7 @@ local TileMapEvents = {
 ---@field replace fun(self:TileMap, oldTile: Tile, newTile: Tile)
 ---@field getNeighboursFor fun(self:TileMap, tile: Tile, distance?: number, inclusive? boolean): Tile[]|nil
 ---@field getAllNeighboursFor fun(self:TileMap, tile: Tile, distance?: number): Tile[]|nil
+---@field tilesAtDistance fun(self:TileMap, tile: Tile, distance?: number): Tile[]|nil
 ---@field upFrom fun(self:TileMap, tile: Tile, distance?: number): Tile|nil
 ---@field downFrom fun(self:TileMap, tile: Tile, distance?: number): Tile|nil
 ---@field leftFrom fun(self:TileMap, tile: Tile, distance?: number): Tile|nil
@@ -239,6 +240,39 @@ function TileMap:tileRadiusWithin(tile, radius, offset)
                     if distance <= r then
                         table.insert(foundTiles, foundTile)
                     end
+                end
+            end
+        end
+    end
+
+    return foundTiles
+end
+
+--- Gets any tiles that are within a given distance of the initial tile, useful for movement
+---@param tile Tile
+---@param distance? number
+---@return Tile[]|nil
+function TileMap:tilesAtDistance(tile, distance)
+    if distance == 0 then
+        return nil
+    end
+
+    local step = distance or 1
+
+    local foundTiles = {}
+
+    for dy = -step, step do
+        for dx = -step, step do
+            local newX = tile.coords.x + dx
+            local newY = tile.coords.y + dy
+
+            local target = Vector.new(newX, newY, tile.coords.z)
+            local foundTile = self:findTileAt(target)
+            if foundTile ~= nil then
+                local targetDist = tile.coords:distanceTo(foundTile.coords)
+
+                if targetDist <= distance then
+                    table.insert(foundTiles, foundTile)
                 end
             end
         end

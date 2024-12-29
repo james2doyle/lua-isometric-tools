@@ -166,7 +166,7 @@ describe("tilemaps", function()
         expect.equal(8, #eightFound)
     end)
 
-    it("can find tiles given direction", function()
+    it("can find tiles given direction and distance", function()
         local t = TileMap.new("ground", EXAMPLE_TILE_LIST)
 
         local tile = t:findTileAt(2, 2)
@@ -190,7 +190,7 @@ describe("tilemaps", function()
         expect.equal('3,1,1', tostring(west.coords))
     end)
 
-    it("can find tiles within a radius", function()
+    it("can find all tiles within a radius", function()
         local t = TileMap.new("ground", EXAMPLE_TILE_LIST)
 
         local tile = t:findTileAt(2, 2)
@@ -214,6 +214,22 @@ describe("tilemaps", function()
         local foundTiles5 = t:tileRadiusWithin(tile, 3, 2)
 
         expect.equal(10, #foundTiles5)
+    end)
+
+    it("can select all tiles given a distance", function()
+        local t = TileMap.new("ground", EXAMPLE_TILE_LIST)
+
+        local tile = t:findTileAt(0, 0)
+
+        local foundTiles = t:tilesAtDistance(tile, 2)
+
+        expect.equal(6, #foundTiles)
+
+        local tile2 = t:findTileAt(2, 2)
+
+        local foundTiles2 = t:tilesAtDistance(tile2, 2)
+
+        expect.equal(13, #foundTiles2)
     end)
 end)
 
