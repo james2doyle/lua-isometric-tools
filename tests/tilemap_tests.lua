@@ -154,6 +154,18 @@ describe("tilemaps", function()
         expect.equal(8, #eightFoundInclusive)
     end)
 
+    it("can find all neighbour tiles", function()
+        local t = TileMap.new("ground", EXAMPLE_TILE_LIST)
+
+        local tile = t:findTileAt(2, 2)
+
+        local nothingFound = t:getAllNeighboursFor(tile, 0)
+        local eightFound = t:getAllNeighboursFor(tile)
+
+        expect.equal(nil, nothingFound)
+        expect.equal(8, #eightFound)
+    end)
+
     it("can find tiles given direction", function()
         local t = TileMap.new("ground", EXAMPLE_TILE_LIST)
 
@@ -178,33 +190,31 @@ describe("tilemaps", function()
         expect.equal('3,1,1', tostring(west.coords))
     end)
 
-    it("can find tiles within a given radius", function()
+    it("can find tiles within a radius", function()
         local t = TileMap.new("ground", EXAMPLE_TILE_LIST)
 
         local tile = t:findTileAt(2, 2)
 
-        local foundTiles = t:tileRadiusWithin(tile)
+        local foundTiles = t:tileRadiusWithin(tile, 2, 0)
 
-        local up = foundTiles[1]
-        local down = foundTiles[2]
-        local left = foundTiles[3]
-        local right = foundTiles[4]
-        local north = foundTiles[5]
-        local south = foundTiles[6]
-        local east = foundTiles[7]
-        local west = foundTiles[8]
+        expect.equal(12, #foundTiles)
 
-        expect.equal('2,1,1', tostring(up.coords))
-        expect.equal('2,3,1', tostring(down.coords))
-        expect.equal('1,2,1', tostring(left.coords))
-        expect.equal('3,2,1', tostring(right.coords))
-        expect.equal('1,1,1', tostring(north.coords))
-        expect.equal('3,3,1', tostring(south.coords))
-        expect.equal('1,3,1', tostring(east.coords))
-        expect.equal('3,1,1', tostring(west.coords))
+        local foundTiles2 = t:tileRadiusWithin(tile, 3, 0)
+
+        expect.equal(22, #foundTiles2)
+
+        local foundTiles3 = t:tileRadiusWithin(tile, 2, 1)
+
+        expect.equal(8, #foundTiles3)
+
+        local foundTiles4 = t:tileRadiusWithin(tile, 2, 2)
+
+        expect.equal(0, #foundTiles4)
+
+        local foundTiles5 = t:tileRadiusWithin(tile, 3, 2)
+
+        expect.equal(10, #foundTiles5)
     end)
-
-    ---@todo test radius
 end)
 
 lester.report() -- Print overall statistic of the tests run.

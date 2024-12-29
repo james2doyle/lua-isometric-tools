@@ -79,7 +79,8 @@ local TileMapEvents = {
 ---@field findTileAt fun(self:TileMap, coordsOrX: Vector|number, y?: number): Tile|nil
 ---@field tileRadiusWithin fun(self:TileMap, tile: Tile, radius?: number, offset?: number)
 ---@field replace fun(self:TileMap, oldTile: Tile, newTile: Tile)
----@field getNeighboursFor fun(self:TileMap, tile: Tile, distance?: number, inclusive? boolean): Tile[]
+---@field getNeighboursFor fun(self:TileMap, tile: Tile, distance?: number, inclusive? boolean): Tile[]|nil
+---@field getAllNeighboursFor fun(self:TileMap, tile: Tile, distance?: number): Tile[]|nil
 ---@field upFrom fun(self:TileMap, tile: Tile, distance?: number): Tile|nil
 ---@field downFrom fun(self:TileMap, tile: Tile, distance?: number): Tile|nil
 ---@field leftFrom fun(self:TileMap, tile: Tile, distance?: number): Tile|nil
@@ -157,7 +158,7 @@ local directionVec = {
     north = Vector.new(-1, -1),
     south = Vector.new(1, 1),
     east = Vector.new(-1, 1),
-    west = Vector.new(1, -1)
+    west = Vector.new(1, -1),
 }
 
 --- Get the tiles that are in a "straight" line from the given tile
@@ -211,30 +212,39 @@ end
 ---@param offset? number how far away from the initial tile to start selecting tiles
 ---@return Tile[]|nil
 function TileMap:tileRadiusWithin(tile, radius, offset)
-    local step = radius or 1
+    local r = radius or 1
     local off = offset or 0
 
-    -- we can't find anything with 0 movement
-    if step == 0 and off == 0 then
+    if r == 0 and off == 0 then
         return nil
     end
 
-    -- just return the immediate surrounding tiles
-    if step == 1 and off == 0 then
-        return {
-            self:upFrom(tile, step),
-            self:downFrom(tile, step),
-            self:leftFrom(tile, step),
-            self:rightFrom(tile, step),
-            self:northFrom(tile, step),
-            self:southFrom(tile, step),
-            self:eastFrom(tile, step),
-            self:westFrom(tile, step)
-        }
+    local foundTiles = {}
+
+    -- Iterate through all possible neighbouring positions within radius
+    for dy = -r, r do
+        for dx = -r, r do
+            -- Calculate the Manhattan distance
+            local distance = math.abs(dx) + math.abs(dy)
+
+            -- Skip the center cell and any cells within the offset
+            if distance > off and distance <= r then
+                local newX = tile.coords.x + dx
+                local newY = tile.coords.y + dy
+
+                local foundTile = self:findTileAt(Vector.new(newX, newY, tile.coords.z))
+
+                if foundTile and tostring(foundTile) ~= tostring(tile.coords) then
+                    -- Add position if it's within the radius
+                    if distance <= r then
+                        table.insert(foundTiles, foundTile)
+                    end
+                end
+            end
+        end
     end
 
-    ---@todo support grabbing a larger area
-    return {}
+    return foundTiles
 end
 
 --- Replaces a Tile with a new one. Returns true on success and false on missing tile
@@ -265,7 +275,7 @@ end
 ---@return Tile[]|nil
 function TileMap:getNeighboursFor(tile, distance, inclusive)
     if distance == 0 then
-      return nil
+        return nil
     end
 
     local step = distance or 1
@@ -277,7 +287,7 @@ function TileMap:getNeighboursFor(tile, distance, inclusive)
             self:upFrom(tile, step),
             self:downFrom(tile, step),
             self:leftFrom(tile, step),
-            self:rightFrom(tile, step)
+            self:rightFrom(tile, step),
         }
 
         return foundTiles
@@ -290,6 +300,50 @@ function TileMap:getNeighboursFor(tile, distance, inclusive)
         table.insert(allTiles, self:downFrom(tile, i))
         table.insert(allTiles, self:leftFrom(tile, i))
         table.insert(allTiles, self:rightFrom(tile, i))
+    end
+
+    return allTiles
+end
+
+--- Finds all neighbour tiles at a distance from a given tile, without inclusive, tile distance skips tiles
+---@param tile Tile the tile to start on
+---@param distance? number the number of tiles to fetch from the starting tile
+---@return Tile[]|nil
+function TileMap:getAllNeighboursFor(tile, distance)
+    if distance == 0 then
+        return nil
+    end
+
+    local step = distance or 1
+    local collectAll = inclusive or false
+
+    -- if you want to collect all but your distance is 1, then this is the same
+    if collectAll == false or distance == 1 then
+        local foundTiles = {
+            self:upFrom(tile, step),
+            self:downFrom(tile, step),
+            self:leftFrom(tile, step),
+            self:rightFrom(tile, step),
+            self:northFrom(tile, step),
+            self:southFrom(tile, step),
+            self:eastFrom(tile, step),
+            self:westFrom(tile, step),
+        }
+
+        return foundTiles
+    end
+
+    local allTiles = {}
+
+    for i = 1, distance do
+        table.insert(allTiles, self:upFrom(tile, i))
+        table.insert(allTiles, self:downFrom(tile, i))
+        table.insert(allTiles, self:leftFrom(tile, i))
+        table.insert(allTiles, self:rightFrom(tile, i))
+        table.insert(allTiles, self:northFrom(tile, i))
+        table.insert(allTiles, self:southFrom(tile, i))
+        table.insert(allTiles, self:eastFrom(tile, i))
+        table.insert(allTiles, self:westFrom(tile, i))
     end
 
     return allTiles
