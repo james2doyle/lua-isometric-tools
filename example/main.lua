@@ -17,45 +17,111 @@ local TILE_HITBOX_PADDING = 2
 local DEBUG = false
 
 local tileStates = {
-  active = nil,
-  hovered = nil,
-  isMoving = true,
+    active = nil,
+    hovered = nil,
+    isMoving = true,
 }
 
 local assets = { catalog = {} }
 
 function assets:add(name, image)
-  self.catalog[name] = image
+    self.catalog[name] = image
 end
 
 function assets:get(name)
-  return self.catalog[name]
+    return self.catalog[name]
 end
 
 local groundLayer = {
-  { "box", "empty", "box", "empty", "box", "box", "box" },
-  { "box", "box", "box", "box", "box", "box", "box" },
-  { "box", "box", "box", "box", "box", "box", "box" },
-  { "empty", "box", "box", "box", "box", "box", "empty" },
-  { "box", "box", "box", "box", "box", "box", "box" },
-  { "box", "box", "box", "box", "box", "empty", "box" },
-  { "box", "box", "box", "box", "box", "box", "box" },
+    { "box", "box", "box","box", "empty", "box", "empty", "box", "box", "box" },
+    { "box", "box", "box","box", "box", "box", "box", "box", "box", "box" },
+    { "box", "box", "box","box", "box", "box", "box", "box", "box", "box" },
+    { "empty", "empty", "empty","empty", "box", "box", "box", "box", "box", "empty" },
+    { "box", "box", "box","box", "box", "box", "box", "box", "box", "box" },
+    { "box", "box", "box","box", "box", "box", "box", "box", "box", "box" },
+    { "box", "box", "box","box", "box", "box", "box", "box", "box", "box" },
+    { "box", "box", "box","box", "box", "box", "box", "box", "box", "box" },
+    { "box", "box", "box","box", "box", "box", "box", "box", "empty", "box" },
+    { "box", "box", "box","box", "box", "box", "box", "box", "box", "box" },
 }
 
 local wallLayer = {
-  { "empty", "empty", "empty", "box", "empty", "empty", "empty" },
-  { "empty", "empty", "empty", "empty", "empty", "empty", "empty" },
-  { "empty", "empty", "empty", "empty", "empty", "empty", "empty" },
-  { "box", "empty", "empty", "empty", "empty", "empty", "box" },
-  { "empty", "empty", "empty", "empty", "empty", "empty", "empty" },
-  { "empty", "empty", "empty", "empty", "empty", "box", "empty" },
-  { "empty", "empty", "empty", "empty", "empty", "empty", "empty" },
+    { "empty", "empty", "empty", "empty", "empty", "empty", "box", "empty", "empty", "empty" },
+    { "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty" },
+    { "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty" },
+    { "box", "box", "box", "box", "empty", "empty", "empty", "empty", "empty", "box" },
+    { "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty" },
+    { "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty" },
+    { "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty" },
+    { "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty" },
+    { "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "box", "empty" },
+    { "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty", "empty" },
 }
+
+---@param tile Tile
+local function drawSelection(tile)
+    love.graphics.setColor(1, 1, 1)
+
+    love.graphics.draw(
+        assets:get("selection"),
+        tile.center.x,
+        tile.center.y,
+        nil,
+        nil,
+        nil,
+        TILE_HALF_WIDTH,
+        TILE_HALF_HEIGHT
+        )
+end
+
+---@param tile Tile
+local function drawOverlay(tile)
+    love.graphics.setColor(1, 1, 1)
+
+    love.graphics.draw(
+        assets:get("overlay"),
+        tile.center.x,
+        tile.center.y,
+        nil,
+        nil,
+        nil,
+        TILE_HALF_WIDTH,
+        TILE_HALF_HEIGHT
+        )
+end
+
+---@param tile Tile
+local function drawArea(tile)
+    love.graphics.setColor(1, 1, 1)
+
+    love.graphics.draw(
+        assets:get("area"),
+        tile.center.x,
+        tile.center.y,
+        nil,
+        nil,
+        nil,
+        TILE_HALF_WIDTH,
+        TILE_HALF_HEIGHT
+        )
+end
 
 local tiles = {}
 
-local groundMap = TileMap.new("ground", {})
 local movementMap = TileMap.new("movement", {})
+local groundMap = TileMap.new("ground", {}, nil, {
+    draw = function(this)
+        -- loop over everything again and draw the second layer
+        -- this allows use to draw the ground "under" the "wall" layer
+        for index = 1, 2 do
+            for _, tile in pairs(this.tiles) do
+                if tile.center.z == index then
+                    tile:trigger("draw")
+                end
+            end
+        end
+    end
+})
 
 function love.resize(w, h)
     if w ~= nil then
@@ -81,6 +147,24 @@ local tileEvents = {
             TILE_HALF_WIDTH,
             TILE_HALF_HEIGHT
             )
+
+        if tileStates.isMoving then
+            -- check if this is a movement area tile
+            local areaTile = movementMap:findTileAt(tile.coords)
+
+            -- only draw the area tile if this also isn't being hovered
+            if areaTile and tileStates.hovered ~= tile then
+                drawArea(tile)
+            end
+
+            if tileStates.hovered == tile then
+                drawOverlay(tile)
+            end
+        end
+
+        if tileStates.active == tile then
+            drawSelection(tile)
+        end
 
         if DEBUG then
             -- green
@@ -160,11 +244,13 @@ function love.load()
 
     groundMap.tiles = tiles
 
-    tileStates.active = groundMap:findTileAt(0, 6)
+    tileStates.active = groundMap:findTileAt(4, 4)
 
     tileStates.hovered = tileStates.active
 
-    movementMap.tiles = groundMap:tileRadiusWithin(tileStates.active, 4)
+    -- there are always tiles to move to on this map so ignore nulls
+    -- using tilesAtDistance would give you less tiles and it is less accurate to the actual "movement" count
+    movementMap.tiles = assert(groundMap:tilesAtDistance(tileStates.active, 4))
 end
 
 function love.update(dt)
@@ -242,63 +328,14 @@ function love.keypressed(key, code, isRepeat)
 end
 
 function love.draw()
-    -- loop over everything again and draw the second layer
-    -- this allows use to draw the ground "under" the "wall" layer
-    for index = 1, 2 do
-        for _, tile in pairs(groundMap.tiles) do
-            if tile.center.z == index then
-                tile:trigger("draw")
-            end
+    groundMap:trigger("draw")
 
-            if tileStates.isMoving then
-                local areaTile = movementMap:findTileAt(tile.coords)
-
-                if areaTile and areaTile.center.z == index then
-                    love.graphics.setColor(1, 1, 1)
-
-                    love.graphics.draw(
-                        assets:get("area"),
-                        areaTile.center.x,
-                        areaTile.center.y,
-                        nil,
-                        nil,
-                        nil,
-                        TILE_HALF_WIDTH,
-                        TILE_HALF_HEIGHT
-                        )
-                end
-
-                if tileStates.hovered and tileStates.hovered.center.z == index then
-                    love.graphics.setColor(1, 1, 1)
-
-                    love.graphics.draw(
-                        assets:get("overlay"),
-                        tileStates.hovered.center.x,
-                        tileStates.hovered.center.y,
-                        nil,
-                        nil,
-                        nil,
-                        TILE_HALF_WIDTH,
-                        TILE_HALF_HEIGHT
-                        )
-                end
-            end
-
-            if tileStates.active ~= nil and tileStates.active.center.z == index then
-                love.graphics.setColor(1, 1, 1)
-
-                love.graphics.draw(
-                    assets:get("selection"),
-                    tileStates.active.center.x,
-                    tileStates.active.center.y,
-                    nil,
-                    nil,
-                    nil,
-                    TILE_HALF_WIDTH,
-                    TILE_HALF_HEIGHT
-                    )
-            end
-        end
+    love.graphics.setFont(love.graphics.newFont(12))
+    love.graphics.setColor(1, 1, 1)
+    if tileStates.isMoving then
+        love.graphics.print("Use arrows/mouse to move, select tile with enter/click", 10, windowHeight - 25)
+    else
+        love.graphics.print("Press [m] to start moving", 10, windowHeight - 25)
     end
 
     if DEBUG then
@@ -310,7 +347,6 @@ function love.draw()
             "Active Tile: " .. (tileStates.active and tostring(tileStates.active) or "[ ?, ? ]"),
         }
 
-        love.graphics.setFont(love.graphics.newFont(12))
         for i, text in ipairs(info) do
             love.graphics.setColor(1, 1, 1)
             love.graphics.print(text, 5, 5 + (i - 1) * 10)
