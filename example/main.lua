@@ -19,10 +19,7 @@ local DEBUG = false
 local tileStates = {
   active = nil,
   hovered = nil,
-  areaTiles = nil,
-  areaDistance = 0,
-  tileInclusive = false,
-  areaRadius = false
+  isMoving = true,
 }
 
 local assets = { catalog = {} }
@@ -58,6 +55,7 @@ local wallLayer = {
 local tiles = {}
 
 local groundMap = TileMap.new("ground", {})
+local movementMap = TileMap.new("movement", {})
 
 function love.resize(w, h)
     if w ~= nil then
@@ -133,7 +131,7 @@ function love.load()
             local center = Vector.new(
                 (windowWidth / 2) + (TILE_HALF_WIDTH * column) - (row * TILE_HALF_WIDTH),
                 (windowHeight / 4) + (TILE_QUARTER_HEIGHT * column) + (row * TILE_QUARTER_HEIGHT)
-            )
+                )
             local tile = makeTile(center, tex, column, row)
 
             table.insert(tiles, tile)
@@ -152,7 +150,7 @@ function love.load()
                 (windowHeight / 4) + (TILE_QUARTER_HEIGHT * column) + (row * TILE_QUARTER_HEIGHT) - TILE_QUARTER_HEIGHT - TILE_HITBOX_PADDING,
                 -- walls are on the level 2
                 2
-            )
+                )
             local tile = makeTile(center, tex, column, row)
 
             table.insert(tiles, tile)
@@ -163,16 +161,23 @@ function love.load()
     groundMap.tiles = tiles
 
     tileStates.active = groundMap:findTileAt(0, 6)
+
+    tileStates.hovered = tileStates.active
+
+    movementMap.tiles = groundMap:tileRadiusWithin(tileStates.active, 4)
 end
 
 function love.update(dt)
-    -- tileStates.areaTiles = groundMap:getNeighboursFor(tileStates.active, tileStates.areaDistance, tileStates.tileInclusive)
+    --- do updates
 end
 
 function love.mousemoved(mx, my)
-    tileStates.hovered = nil
+    if not tileStates.isMoving then
+        return
+    end
+
     local mouseVec = Vector.new(mx, my)
-    for _, tile in pairs(tiles) do
+    for _, tile in pairs(movementMap.tiles) do
         if tile:isHovered(mouseVec) then
             tileStates.hovered = tile
         end
@@ -181,8 +186,14 @@ end
 
 -- 1 is the primary mouse button, 2 is the secondary mouse button and 3 is the middle button
 function love.mousepressed(mx, my, button, istouch, presses)
-    if button == 1 then
+    if not tileStates.isMoving then
+        return
+    end
+
+    if button == 1 and tileStates.hovered then
         tileStates.active = tileStates.hovered
+        movementMap.tiles = groundMap:tileRadiusWithin(tileStates.active, 4)
+        tileStates.isMoving = false
     end
 end
 
@@ -191,63 +202,41 @@ function love.keypressed(key, code, isRepeat)
         DEBUG = not DEBUG
     end
 
-    if tileStates.active ~= nil then
-        if code == "m" then
-            print("move...")
-        end
+    if code == "m" then
+        tileStates.isMoving = not tileStates.isMoving
+        tileStates.hovered = tileStates.active
+    end
 
-        if code == "return" then
-            print("accept...")
-        end
+    if code == "return" then
+        tileStates.active = tileStates.hovered
+        movementMap.tiles = groundMap:tileRadiusWithin(tileStates.active, 4)
+        tileStates.isMoving = false
+    end
 
-        if code == "r" then
-            tileStates.areaRadius = not tileStates.areaRadius
-        end
-
-        if code == "a" then
-            tileStates.areaDistance = tileStates.areaDistance + 1
-        end
-
-        if code == "s" and tileStates.areaDistance > 0 then
-            tileStates.areaDistance = tileStates.areaDistance - 1
-        end
-
-        if code == "d" then
-            tileStates.tileInclusive = not tileStates.tileInclusive
-        end
-
-        -- the tiles are all part of the same map and their coordinates are not actually taking into account their "z position"
-        -- we are just drawing them at different Y positions based on their "layer" which allows us to move to them as if they were higher even though they aren't actually
+    if tileStates.isMoving and tileStates.hovered then
         if code == "up" then
-            local moveTo = groundMap:upFrom(tileStates.active)
+            local moveTo = movementMap:upFrom(tileStates.hovered)
             if moveTo ~= nil then
-                tileStates.active = groundMap:upFrom(tileStates.active)
+                tileStates.hovered = moveTo
             end
         end
         if code == "down" then
-            local moveTo = groundMap:downFrom(tileStates.active)
+            local moveTo = movementMap:downFrom(tileStates.hovered)
             if moveTo ~= nil then
-                tileStates.active = groundMap:downFrom(tileStates.active)
+                tileStates.hovered = moveTo
             end
         end
         if code == "left" then
-            local moveTo = groundMap:leftFrom(tileStates.active)
+            local moveTo = movementMap:leftFrom(tileStates.hovered)
             if moveTo ~= nil then
-                tileStates.active = groundMap:leftFrom(tileStates.active)
+                tileStates.hovered = moveTo
             end
         end
         if code == "right" then
-            local moveTo = groundMap:rightFrom(tileStates.active)
+            local moveTo = movementMap:rightFrom(tileStates.hovered)
             if moveTo ~= nil then
-                tileStates.active = groundMap:rightFrom(tileStates.active)
+                tileStates.hovered = moveTo
             end
-        end
-
-        if tileStates.areaRadius == false then
-            tileStates.areaTiles = groundMap:getNeighboursFor(tileStates.active, tileStates.areaDistance, tileStates.tileInclusive)
-        else
-            local offset = tileStates.tileInclusive and 2 or 0
-            tileStates.areaTiles = groundMap:tileRadiusWithin(tileStates.active, tileStates.areaDistance, offset)
         end
     end
 end
@@ -256,9 +245,43 @@ function love.draw()
     -- loop over everything again and draw the second layer
     -- this allows use to draw the ground "under" the "wall" layer
     for index = 1, 2 do
-        for _, tile in pairs(tiles) do
+        for _, tile in pairs(groundMap.tiles) do
             if tile.center.z == index then
                 tile:trigger("draw")
+            end
+
+            if tileStates.isMoving then
+                local areaTile = movementMap:findTileAt(tile.coords)
+
+                if areaTile and areaTile.center.z == index then
+                    love.graphics.setColor(1, 1, 1)
+
+                    love.graphics.draw(
+                        assets:get("area"),
+                        areaTile.center.x,
+                        areaTile.center.y,
+                        nil,
+                        nil,
+                        nil,
+                        TILE_HALF_WIDTH,
+                        TILE_HALF_HEIGHT
+                        )
+                end
+
+                if tileStates.hovered and tileStates.hovered.center.z == index then
+                    love.graphics.setColor(1, 1, 1)
+
+                    love.graphics.draw(
+                        assets:get("overlay"),
+                        tileStates.hovered.center.x,
+                        tileStates.hovered.center.y,
+                        nil,
+                        nil,
+                        nil,
+                        TILE_HALF_WIDTH,
+                        TILE_HALF_HEIGHT
+                        )
+                end
             end
 
             if tileStates.active ~= nil and tileStates.active.center.z == index then
@@ -274,39 +297,6 @@ function love.draw()
                     TILE_HALF_WIDTH,
                     TILE_HALF_HEIGHT
                     )
-            end
-
-            if tileStates.hovered ~= nil and tileStates.hovered.center.z == index then
-                love.graphics.setColor(1, 1, 1)
-
-                love.graphics.draw(
-                    assets:get("overlay"),
-                    tileStates.hovered.center.x,
-                    tileStates.hovered.center.y,
-                    nil,
-                    nil,
-                    nil,
-                    TILE_HALF_WIDTH,
-                    TILE_HALF_HEIGHT
-                    )
-            end
-        end
-        if tileStates.areaTiles ~= nil and tileStates.areaDistance > 0 then
-            for _, tile in pairs(tileStates.areaTiles) do
-                if tile.center.z == index then
-                    love.graphics.setColor(1, 1, 1)
-
-                    love.graphics.draw(
-                        assets:get("area"),
-                        tile.center.x,
-                        tile.center.y,
-                        nil,
-                        nil,
-                        nil,
-                        TILE_HALF_WIDTH,
-                        TILE_HALF_HEIGHT
-                        )
-                end
             end
         end
     end
