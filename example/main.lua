@@ -36,7 +36,7 @@ function assets:get(name)
 end
 
 local groundLayer = {
-  { "box", "box", "box", "empty", "box", "box", "box" },
+  { "box", "empty", "box", "empty", "box", "box", "box" },
   { "box", "box", "box", "box", "box", "box", "box" },
   { "box", "box", "box", "box", "box", "box", "box" },
   { "empty", "box", "box", "box", "box", "box", "empty" },
@@ -162,7 +162,7 @@ function love.load()
 
     groundMap.tiles = tiles
 
-    tileStates.active = groundMap:findTileAt(3, 3)
+    tileStates.active = groundMap:findTileAt(0, 6)
 end
 
 function love.update(dt)
@@ -192,8 +192,16 @@ function love.keypressed(key, code, isRepeat)
     end
 
     if tileStates.active ~= nil then
+        if code == "m" then
+            print("move...")
+        end
+
+        if code == "return" then
+            print("accept...")
+        end
+
         if code == "r" then
-          tileStates.areaRadius = not tileStates.areaRadius
+            tileStates.areaRadius = not tileStates.areaRadius
         end
 
         if code == "a" then
@@ -238,7 +246,8 @@ function love.keypressed(key, code, isRepeat)
         if tileStates.areaRadius == false then
             tileStates.areaTiles = groundMap:getNeighboursFor(tileStates.active, tileStates.areaDistance, tileStates.tileInclusive)
         else
-            tileStates.areaTiles = groundMap:tileRadiusWithin(tileStates.active, tileStates.areaDistance)
+            local offset = tileStates.tileInclusive and 2 or 0
+            tileStates.areaTiles = groundMap:tileRadiusWithin(tileStates.active, tileStates.areaDistance, offset)
         end
     end
 end
