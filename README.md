@@ -1,7 +1,7 @@
 Lua Iso Tools
 =============
 
-![example showcase](example/demo.gif "example showcase")
+![example showcase](example/demo.mp4 "example showcase")
 
 > A toolkit of functions and classes to help build isometric games with Lua
 
