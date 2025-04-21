@@ -62,5 +62,5 @@ lua tests/tilemap_tests.lua --filter="events"
 Running all tests:
 
 ```sh
-find tests/ -name '*.lua' -exec lua {} \;
+find tests/ -name '*.lua' -exec lua {} --stop-on-fail \;
 ```

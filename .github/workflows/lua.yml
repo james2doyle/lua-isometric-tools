@@ -15,7 +15,7 @@ jobs:
 
     strategy:
       matrix:
-        luaVersion: [5.1, 5.2, 5.3, 5.4, luajit]
+        luaVersion: [5.1, 5.2, 5.3, 5.4, luajit-2.0]
 
     steps:
       - name: Checkout code
@@ -28,4 +28,4 @@ jobs:
 
       - name: Run tests
         run: |
-          find tests/ -name '*.lua' -exec lua {} \;
+          find tests/ -name '*.lua' -exec lua {} --stop-on-fail \;
