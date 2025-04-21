@@ -1,1 +1,2 @@
 std = "lua53"
+exclude = ["lib/lester/*"]
