@@ -29,8 +29,18 @@ https://love2d-community.github.io/love-api/
 
 ### Formatting
 
+Formatting uses [stylua](https://github.com/JohnnyMorganz/StyLua)
+
 ```sh
 stylua .
+```
+
+### Linting
+
+Linting uses [selene](https://kampfkarren.github.io/selene/selene.html)
+
+```sh
+selene .
 ```
 
 ### Tests
