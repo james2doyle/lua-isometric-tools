@@ -30,7 +30,7 @@ describe("vectors", function()
     end)
 
     it("can duplicate a vector", function()
-        local vec = Vector.new(100,100)
+        local vec = Vector.new(100, 100)
 
         local vec2 = vec:duplicate()
 

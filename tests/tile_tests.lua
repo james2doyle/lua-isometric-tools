@@ -16,14 +16,7 @@ lester.stop_on_fail = true
 
 describe("tiles", function()
     it("can create a tile", function()
-        local t = Tile.new(
-            "grassTile",
-            "grass",
-            Vector.zero(),
-            Vector.new(200, 200),
-            TILE_WIDTH,
-            TILE_HEIGHT
-        )
+        local t = Tile.new("grassTile", "grass", Vector.zero(), Vector.new(200, 200), TILE_WIDTH, TILE_HEIGHT)
 
         expect.equal("grass [ 0, 0 ]", tostring(t))
         expect.equal("grassTile", t.name)
@@ -34,14 +27,7 @@ describe("tiles", function()
     end)
 
     it("can duplicate a tile", function()
-        local t = Tile.new(
-            "grassTile",
-            "grass",
-            Vector.zero(),
-            Vector.new(200, 200),
-            TILE_WIDTH,
-            TILE_HEIGHT
-        )
+        local t = Tile.new("grassTile", "grass", Vector.zero(), Vector.new(200, 200), TILE_WIDTH, TILE_HEIGHT)
 
         local t2 = t:duplicate()
 
@@ -54,19 +40,12 @@ describe("tiles", function()
     end)
 
     it("can trigger events on a tile", function()
-        local t = Tile.new(
-            "grassTile",
-            "grass",
-            Vector.zero(),
-            Vector.new(200, 200),
-            TILE_WIDTH,
-            TILE_HEIGHT
-        )
+        local t = Tile.new("grassTile", "grass", Vector.zero(), Vector.new(200, 200), TILE_WIDTH, TILE_HEIGHT)
 
         local didTrigger = false
         expect.equal(false, didTrigger)
 
-        t:on("load", function ()
+        t:on("load", function()
             didTrigger = true
         end)
         t:trigger("load")
@@ -75,17 +54,10 @@ describe("tiles", function()
     end)
 
     it("can use events on a tile to manipulate it", function()
-        local t = Tile.new(
-            "grassTile",
-            "grass",
-            Vector.zero(),
-            Vector.new(200, 200),
-            TILE_WIDTH,
-            TILE_HEIGHT
-        )
+        local t = Tile.new("grassTile", "grass", Vector.zero(), Vector.new(200, 200), TILE_WIDTH, TILE_HEIGHT)
 
         expect.equal(false, t.hovered)
-        t:on("hovered", function (this)
+        t:on("hovered", function(this)
             this.hovered = true
         end)
         t:trigger("hovered")
@@ -94,20 +66,13 @@ describe("tiles", function()
     end)
 
     it("can use events on a tile with additional data", function()
-        local t = Tile.new(
-            "grassTile",
-            "grass",
-            Vector.zero(),
-            Vector.new(200, 200),
-            TILE_WIDTH,
-            TILE_HEIGHT
-        )
+        local t = Tile.new("grassTile", "grass", Vector.zero(), Vector.new(200, 200), TILE_WIDTH, TILE_HEIGHT)
 
         t.hovered = true
         t.active = true
 
         local extraDetails = os.time()
-        t:on("destroyed", function (this, details)
+        t:on("destroyed", function(this, details)
             this.hovered = false
             this.active = false
             this.visitable = false
@@ -125,30 +90,16 @@ describe("tiles", function()
         -- {0,0} {1,0} {2,0}
         -- {0,1} {1,1} {2,1}
         -- {0,2} {1,2} {2,2}
-        local t = Tile.new(
-            "grassTile",
-            "grass",
-            Vector.new(1,1),
-            Vector.new(200, 200),
-            TILE_WIDTH,
-            TILE_HEIGHT
-        )
+        local t = Tile.new("grassTile", "grass", Vector.new(1, 1), Vector.new(200, 200), TILE_WIDTH, TILE_HEIGHT)
 
-        expect.equal('1,0,1', tostring(t:duplicate():up().coords))
-        expect.equal('1,2,1', tostring(t:duplicate():down().coords))
-        expect.equal('0,1,1', tostring(t:duplicate():left().coords))
-        expect.equal('2,1,1', tostring(t:duplicate():right().coords))
+        expect.equal("1,0,1", tostring(t:duplicate():up().coords))
+        expect.equal("1,2,1", tostring(t:duplicate():down().coords))
+        expect.equal("0,1,1", tostring(t:duplicate():left().coords))
+        expect.equal("2,1,1", tostring(t:duplicate():right().coords))
     end)
 
     it("can check if a tile is hovered", function()
-        local t = Tile.new(
-            "grassTile",
-            "grass",
-            Vector.new(1,1),
-            Vector.new(200, 200),
-            TILE_WIDTH,
-            TILE_HEIGHT
-        )
+        local t = Tile.new("grassTile", "grass", Vector.new(1, 1), Vector.new(200, 200), TILE_WIDTH, TILE_HEIGHT)
 
         local pointer = Vector.new(201, 201)
         local isHovered = t:isHovered(pointer)

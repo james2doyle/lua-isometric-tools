@@ -27,6 +27,12 @@ https://gist.github.com/oatmealine/655c9e64599d0f0dd47687c1186de99f
 https://stevedonovan.github.io/ldoc/manual/doc.md.html
 https://love2d-community.github.io/love-api/
 
+### Formatting
+
+```sh
+stylua .
+```
+
 ### Tests
 
 Tests use [lester](https://edubart.github.io/lester/) to do all the assertions.
