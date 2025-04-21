@@ -154,6 +154,22 @@ describe("tilemaps", function()
         expect.equal(8, #eightFoundInclusive)
     end)
 
+    it("can find all neighbour tiles at a given distance", function()
+        local t = TileMap.new("ground", EXAMPLE_TILE_LIST)
+
+        local tile = t:findTileAt(2, 2)
+
+        local nothingFound = t:getAllNeighboursFor(tile, 0)
+        local eightFound = t:getAllNeighboursFor(tile, 2)
+        local eightFoundExclusive = t:getAllNeighboursFor(tile, 2)
+        local sixteenFoundInclusive = t:getAllNeighboursFor(tile, 2, true)
+
+        expect.equal(nil, nothingFound)
+        expect.equal(8, #eightFound)
+        expect.equal(8, #eightFoundExclusive)
+        expect.equal(16, #sixteenFoundInclusive)
+    end)
+
     it("can find all neighbour tiles", function()
         local t = TileMap.new("ground", EXAMPLE_TILE_LIST)
 
