@@ -1,7 +1,7 @@
 Lua Iso Tools
 =============
 
-[![Lua CI](https://github.com/james2doyle/lua-isometric-tools/actions/workflows/lua.yml/badge.svg)](https://github.com/james2doyle/lua-isometric-tools/actions/workflows/lua.yml)
+[![Lua CI (5.1, 5.2, 5.3, 5.4)](https://github.com/james2doyle/lua-isometric-tools/actions/workflows/lua.yml/badge.svg)](https://github.com/james2doyle/lua-isometric-tools/actions/workflows/lua.yml)
 
 https://github.com/user-attachments/assets/f96188b6-0de3-49a2-bde5-2ded8423b5ab
 
