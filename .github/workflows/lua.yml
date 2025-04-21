@@ -10,7 +10,7 @@ on:
 
 jobs:
   test:
-    name: Test with Lua ${{ matrix.lua-version }}
+    name: Test with Lua ${{ matrix.luaVersion }}
     runs-on: ubuntu-latest
 
     strategy:
@@ -24,7 +24,7 @@ jobs:
       - name: Set up Lua
         uses: leafo/gh-actions-lua@v8
         with:
-          luaVersion: ${{ matrix.lua-version }}
+          luaVersion: ${{ matrix.luaVersion }}
 
       - name: Run tests
         run: |
