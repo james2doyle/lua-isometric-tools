@@ -342,8 +342,9 @@ end
 --- Finds all neighbour tiles at a distance from a given tile, without inclusive, tile distance skips tiles
 ---@param tile Tile the tile to start on
 ---@param distance? number the number of tiles to fetch from the starting tile
+---@param inclusive? boolean flag for if all tiles are included or just the end target ones
 ---@return Tile[]|nil
-function TileMap:getAllNeighboursFor(tile, distance)
+function TileMap:getAllNeighboursFor(tile, distance, inclusive)
     if distance == 0 then
         return nil
     end
