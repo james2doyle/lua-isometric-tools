@@ -1,6 +1,8 @@
 Lua Iso Tools
 =============
 
+[![Lua CI](https://github.com/james2doyle/lua-isometric-tools/actions/workflows/lua.yml/badge.svg)](https://github.com/james2doyle/lua-isometric-tools/actions/workflows/lua.yml)
+
 https://github.com/user-attachments/assets/f96188b6-0de3-49a2-bde5-2ded8423b5ab
 
 > A toolkit of functions and classes to help build isometric games with Lua
