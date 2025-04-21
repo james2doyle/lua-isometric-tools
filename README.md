@@ -25,3 +25,26 @@ You can then press \` to see the debug overlays
 
 https://gist.github.com/oatmealine/655c9e64599d0f0dd47687c1186de99f
 https://stevedonovan.github.io/ldoc/manual/doc.md.html
+https://love2d-community.github.io/love-api/
+
+### Tests
+
+Tests use [lester](https://edubart.github.io/lester/) to do all the assertions.
+
+Run a test suite:
+
+```sh
+lua tests/map_tests.lua --stop-on-fail
+```
+
+Run a single test matching a filter:
+
+```sh
+lua tests/tilemap_tests.lua --filter="events"
+```
+
+Running all tests:
+
+```sh
+find tests/ -name '*.lua' -exec lua {} \;
+```
