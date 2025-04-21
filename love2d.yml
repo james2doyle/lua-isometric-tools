@@ -1,0 +1,50 @@
+---
+base: lua51
+lua_versions:
+  - lua53
+globals:
+  love.draw:
+    args:
+      - type: function
+    must_use: true
+  love.load:
+    args:
+      - type: function
+    must_use: true
+  love.conf:
+    args:
+      - type: table
+        required: true
+  # (w, h)
+  love.resize:
+    args:
+      - type: number
+      - type: number
+    must_use: true
+  # (dt)
+  love.update:
+    args:
+      - type: number
+    must_use: true
+  # (mx, my)
+  love.mousemoved:
+    args:
+      - type: number
+      - type: number
+    must_use: true
+  # (mx, my, button, istouch, presses)
+  love.mousepressed:
+    args:
+      - type: number
+      - type: number
+      - type: number
+      - type: bool
+      - type: number
+    must_use: true
+  # (key, code, isRepeat)
+  love.keypressed:
+    args:
+      - type: string
+      - type: string
+      - type: bool
+    must_use: true
